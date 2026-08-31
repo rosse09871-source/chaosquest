@@ -1,0 +1,152 @@
+import os
+import subprocess
+import time
+from typing import Tuple, Optional, Dict, Any
+from pathlib import Path
+import docker
+from docker.errors import DockerException, NotFound, APIError
+from app.config import DEFAULT_CONTAINER_MEM_LIMIT, DEFAULT_CONTAINER_CPU_LIMIT
+from app.engine.stage_loader import get_challenge
+
+
+class SandboxError(Exception):
+    pass
+
+
+class DockerOrchestrator:
+    def __init__(self, base_image: str = "ubuntu:22.04"):
+        self.base_image = base_image
+        self._client: Optional[docker.DockerClient] = None
+        self._docker_available = False
+        self._init_client()
+
+    def _init_client(self):
+        try:
+            self._client = docker.from_env()
+            self._client.ping()
+            self._docker_available = True
+        except Exception:
+            self._client = None
+            self._docker_available = False
+
+    @property
+    def is_docker_available(self) -> bool:
+        return self._docker_available
+
+    def _get_container_name(self, stage_id: str, session_id: str) -> str:
+        return f"chaos_{stage_id}_{session_id}"
+
+    def create_sandbox(self, stage_id: str, session_id: str) -> Dict[str, Any]:
+        """
+        Creates and starts an isolated Docker sandbox container for the given stage and session,
+        then injects the sabotage failure into the container.
+        """
+        challenge = get_challenge(stage_id)
+        if not challenge:
+            raise SandboxError(f"Stage '{stage_id}' metadata not found.")
+
+        container_name = self._get_container_name(stage_id, session_id)
+
+        if not self._docker_available or not self._client:
+            # Fallback/Dry-run simulation mode when Docker daemon is not active
+            return {
+                "container_id": f"mock_{container_name}",
+                "container_name": container_name,
+                "status": "running_mock",
+                "mock": True,
+            }
+
+        # 1. Clean up existing container with the same name if any
+        self.destroy_sandbox(stage_id=stage_id, session_id=session_id)
+
+        # 2. Spawn container
+        nano_cpus = int(DEFAULT_CONTAINER_CPU_LIMIT * 1_000_000_000)
+        labels = {
+            "chaosquest": "true",
+            "stage_id": stage_id,
+            "session_id": session_id,
+            "created_at": str(time.time()),
+        }
+
+        try:
+            container = self._client.containers.run(
+                image=self.base_image,
+                name=container_name,
+                detach=True,
+                tty=True,
+                stdin_open=True,
+                mem_limit=DEFAULT_CONTAINER_MEM_LIMIT,
+                nano_cpus=nano_cpus,
+                labels=labels,
+                command="/bin/bash",
+            )
+        except DockerException as e:
+            raise SandboxError(f"Failed to launch Docker container: {e}")
+
+        # 3. Inject sabotage script inside container
+        if challenge.sabotage_script_path and os.path.exists(challenge.sabotage_script_path):
+            with open(challenge.sabotage_script_path, "r", encoding="utf-8") as f:
+                sabotage_content = f.read()
+
+            exec_cmd = ["bash", "-c", sabotage_content]
+            exec_res = container.exec_run(exec_cmd)
+            if exec_res.exit_code != 0:
+                print(f"Warning: Sabotage script warning/non-zero: {exec_res.output.decode('utf-8', errors='ignore')}")
+
+        return {
+            "container_id": container.id,
+            "container_name": container_name,
+            "status": container.status,
+            "mock": False,
+        }
+
+    def verify_sandbox(self, stage_id: str, session_id: str) -> Tuple[bool, str]:
+        """
+        Executes verify.sh inside the sandbox container and returns (success, message).
+        """
+        challenge = get_challenge(stage_id)
+        if not challenge:
+            return False, f"Stage '{stage_id}' not found."
+
+        if not self._docker_available or not self._client:
+            return True, "[Mock Mode] Verification passed simulated."
+
+        container_name = self._get_container_name(stage_id, session_id)
+        try:
+            container = self._client.containers.get(container_name)
+        except NotFound:
+            return False, f"Container '{container_name}' is not running."
+        except DockerException as e:
+            return False, f"Docker error: {e}"
+
+        if not challenge.verify_script_path or not os.path.exists(challenge.verify_script_path):
+            return False, "Verification script missing."
+
+        with open(challenge.verify_script_path, "r", encoding="utf-8") as f:
+            verify_content = f.read()
+
+        exec_res = container.exec_run(["bash", "-c", verify_content])
+        output = exec_res.output.decode("utf-8", errors="ignore").strip()
+        is_success = (exec_res.exit_code == 0)
+
+        return is_success, output
+
+    def destroy_sandbox(self, stage_id: str, session_id: str) -> bool:
+        """Stops and removes the container."""
+        container_name = self._get_container_name(stage_id, session_id)
+        if not self._docker_available or not self._client:
+            return True
+
+        try:
+            container = self._client.containers.get(container_name)
+            container.stop(timeout=2)
+            container.remove(force=True)
+            return True
+        except NotFound:
+            return False
+        except DockerException:
+            return False
+
+    def get_shell_exec_command(self, stage_id: str, session_id: str) -> list:
+        container_name = self._get_container_name(stage_id, session_id)
+        return ["docker", "exec", "-it", container_name, "bash"]
