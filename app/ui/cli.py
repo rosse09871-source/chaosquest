@@ -28,7 +28,8 @@ class ChaosQuestApp:
     def __init__(self):
         init_db()
         self.session_id = f"sess_{uuid.uuid4().hex[:8]}"
-        self.current_user: models.User = None
+        self.user_id: int = None
+        self.username: str = ""
         self.active_attempts = {}  # stage_id -> StageAttempt ID
 
     def start(self):
@@ -50,18 +51,20 @@ class ChaosQuestApp:
                 break
 
         with get_db_session() as db:
-            self.current_user = crud.get_or_create_user(db, username)
+            user = crud.get_or_create_user(db, username)
+            self.user_id = user.id
+            self.username = user.username
 
     def _get_user_stats(self):
         with get_db_session() as db:
-            return crud.get_user_progress_summary(db, self.current_user.id)
+            return crud.get_user_progress_summary(db, self.user_id)
 
     def _main_loop(self):
         while True:
             console.clear()
             stats = self._get_user_stats()
             render_banner(
-                username=stats.get("username", self.current_user.username),
+                username=stats.get("username", self.username),
                 score=stats.get("total_score", 0),
                 cleared_count=stats.get("cleared_count", 0),
             )
@@ -94,7 +97,7 @@ class ChaosQuestApp:
         while True:
             console.clear()
             stats = self._get_user_stats()
-            render_banner(username=self.current_user.username, score=stats.get("total_score", 0), cleared_count=stats.get("cleared_count", 0))
+            render_banner(username=self.username, score=stats.get("total_score", 0), cleared_count=stats.get("cleared_count", 0))
 
             challenges = load_all_challenge_metadata()
             cleared_ids = set(stats.get("cleared_stage_ids", []))
@@ -136,7 +139,7 @@ class ChaosQuestApp:
         while True:
             console.clear()
             stats = self._get_user_stats()
-            render_banner(username=self.current_user.username, score=stats.get("total_score", 0), cleared_count=stats.get("cleared_count", 0))
+            render_banner(username=self.username, score=stats.get("total_score", 0), cleared_count=stats.get("cleared_count", 0))
 
             # Fetch active attempt from DB
             attempt = None
@@ -144,7 +147,7 @@ class ChaosQuestApp:
                 attempt = (
                     db.query(models.StageAttempt)
                     .filter(
-                        models.StageAttempt.user_id == self.current_user.id,
+                        models.StageAttempt.user_id == self.user_id,
                         models.StageAttempt.stage_id == stage_id,
                         models.StageAttempt.status == "IN_PROGRESS",
                     )
@@ -200,7 +203,7 @@ class ChaosQuestApp:
             with get_db_session() as db:
                 attempt = crud.start_stage_attempt(
                     db=db,
-                    user_id=self.current_user.id,
+                    user_id=self.user_id,
                     stage_id=stage_id,
                     session_id=self.session_id,
                     container_id=sandbox_info["container_id"],
