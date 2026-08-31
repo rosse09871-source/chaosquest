@@ -148,5 +148,13 @@ class DockerOrchestrator:
             return False
 
     def get_shell_exec_command(self, stage_id: str, session_id: str) -> list:
+        if not self._docker_available or not self._client:
+            sandbox_dir = Path("data/sandboxes") / f"chaos_{stage_id}_{session_id}"
+            sandbox_dir.mkdir(parents=True, exist_ok=True)
+            return [
+                "bash",
+                "-c",
+                f"echo -e '\\033[1;33m[⚠️ 로컬 시뮬레이션 모드]\\033[0m Docker가 실행 중이지 않아 로컬 시뮬레이션 쉘로 진입합니다.\\n👉 샌드박스 경로: {sandbox_dir}\\n👉 조사를 마치고 메인 화면으로 돌아가려면 exit 를 입력하세요.\\n'; cd {sandbox_dir} && PS1='(chaos-{stage_id}) \\w \\$ ' bash --norc",
+            ]
         container_name = self._get_container_name(stage_id, session_id)
         return ["docker", "exec", "-it", container_name, "bash"]

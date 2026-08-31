@@ -42,7 +42,7 @@ class ChaosQuestApp:
         self._main_loop()
 
     def _login_prompt(self):
-        render_banner()
+        render_banner(docker_active=orchestrator.is_docker_available)
         console.print("[bold cyan]👋 환영합니다! ChaosQuest 트러블슈팅 아레나에 오신 것을 환영합니다.[/]\n")
         
         while True:
@@ -67,6 +67,7 @@ class ChaosQuestApp:
                 username=stats.get("username", self.username),
                 score=stats.get("total_score", 0),
                 cleared_count=stats.get("cleared_count", 0),
+                docker_active=orchestrator.is_docker_available,
             )
 
             table = Table(box=box.SIMPLE_HEAVY, border_style="bright_blue", expand=True)
@@ -97,7 +98,7 @@ class ChaosQuestApp:
         while True:
             console.clear()
             stats = self._get_user_stats()
-            render_banner(username=self.username, score=stats.get("total_score", 0), cleared_count=stats.get("cleared_count", 0))
+            render_banner(username=self.username, score=stats.get("total_score", 0), cleared_count=stats.get("cleared_count", 0), docker_active=orchestrator.is_docker_available)
 
             challenges = load_all_challenge_metadata()
             cleared_ids = set(stats.get("cleared_stage_ids", []))
@@ -139,7 +140,7 @@ class ChaosQuestApp:
         while True:
             console.clear()
             stats = self._get_user_stats()
-            render_banner(username=self.username, score=stats.get("total_score", 0), cleared_count=stats.get("cleared_count", 0))
+            render_banner(username=self.username, score=stats.get("total_score", 0), cleared_count=stats.get("cleared_count", 0), docker_active=orchestrator.is_docker_available)
 
             # Fetch active attempt from DB
             attempt = None

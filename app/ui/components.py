@@ -10,10 +10,14 @@ from app.engine.stage_loader import ChallengeMetadata
 console = Console()
 
 
-def render_banner(username: str = "", score: int = 0, cleared_count: int = 0):
-    """Renders top header banner with user profile."""
+def render_banner(username: str = "", score: int = 0, cleared_count: int = 0, docker_active: bool = False):
+    """Renders top header banner with user profile and engine status."""
     title_text = Text("🚨 ChaosQuest ", style="bold red")
-    title_text.append("| Cloud DevOps Incident Sandbox", style="bold white")
+    title_text.append("| Cloud DevOps Incident Sandbox ", style="bold white")
+    if docker_active:
+        title_text.append("[🐳 Docker Active]", style="bold green")
+    else:
+        title_text.append("[⚡ Local Simulation Mode]", style="bold yellow")
 
     profile_text = Text()
     if username:
