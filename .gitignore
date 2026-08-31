@@ -1,0 +1,37 @@
+# Python bytecode & cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Environments
+.env
+.env.local
+.venv/
+venv/
+ENV/
+env/
+
+# Databases
+*.sqlite
+*.sqlite3
+*.db
+data/
+
+# OS Specific
+.DS_Store
+Thumbs.db
+
+# IDEs
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Docker / Temporary runtime files
+*.pid
+logs/
+*.log

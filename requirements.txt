@@ -1,0 +1,16 @@
+# TUI & Terminal Framework
+rich>=13.7.0
+textual>=0.50.0
+typer>=0.9.0
+
+# Database & ORM
+sqlalchemy>=2.0.25
+
+# Container & Automation
+docker>=7.0.0
+pyyaml>=6.0.1
+pydantic>=2.6.0
+python-dotenv>=1.0.1
+
+# Testing
+pytest>=8.0.0
