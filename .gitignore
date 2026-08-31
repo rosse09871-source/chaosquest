@@ -1,37 +1,61 @@
-# Python bytecode & cache
-__pycache__/
-*.py[cod]
-*$py.class
-*.so
-.pytest_cache/
-.coverage
-htmlcov/
+# ==========================================
+# 🔒 ChaosQuest Security & Privacy Ignore Rules
+# ==========================================
 
-# Environments
+# 1. Environment & Secret Configuration
 .env
-.env.local
-.venv/
-venv/
-ENV/
-env/
+.env.*
+!.env.example
+*.env
+secrets/
+credentials/
+config.local.*
 
-# Databases
+# 2. Cryptographic Keys, Certificates & Tokens
+*.pem
+*.key
+*.pub
+*.crt
+*.csr
+*.p12
+*.pfx
+id_rsa*
+id_ed25519*
+*.token
+
+# 3. User Data & Database Storage
 *.sqlite
 *.sqlite3
 *.db
 data/
+*.rdb
+dump.rdb
 
-# OS Specific
+# 4. Logs & Operational Traces
+logs/
+*.log
+*.pid
+*.stdout
+*.stderr
+
+# 5. Python Environment & Bytecode
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+.venv/
+venv/
+ENV/
+env/
+.pytest_cache/
+.coverage
+htmlcov/
+
+# 6. Operating System & Editor Artifacts
 .DS_Store
 Thumbs.db
-
-# IDEs
 .idea/
 .vscode/
 *.swp
 *.swo
-
-# Docker / Temporary runtime files
-*.pid
-logs/
-*.log
