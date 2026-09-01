@@ -2,7 +2,7 @@
 set -e
 
 # 1. Check if rogue_occupier is terminated
-if pgrep -f "rogue_occupier.py" >/dev/null 2>&1; then
+if ps -eo pid,args | grep -v "$$" | grep "[r]ogue_occupier.py" >/dev/null 2>&1; then
     echo "❌ 실패: 80번 포트를 점유하던 rogue_occupier 프로세스가 여전히 실행 중입니다."
     exit 1
 fi
