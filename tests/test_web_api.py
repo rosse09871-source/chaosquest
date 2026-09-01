@@ -130,13 +130,22 @@ def test_community_flow(client):
 
 
 def test_admin_user_management(client):
-    # 1. Login as regular user -> try admin API -> 403 Forbidden
-    client.cookies.set("chaos_username", "regular_engineer")
+    # 1. Register regular user
+    res_reg = client.post("/api/user/login", json={"username": "regular_engineer"})
+    assert res_reg.status_code == 200
     res_unauth = client.get("/api/admin/users")
     assert res_unauth.status_code == 403
 
-    # 2. Login as admin 'daisy'
-    client.cookies.set("chaos_username", "daisy")
+    # 2. Try to claim 'daisy' without password -> 401 Unauthorized
+    res_fail = client.post("/api/user/login", json={"username": "daisy"})
+    assert res_fail.status_code == 401
+
+    # 3. Login as admin 'daisy' with correct password -> 200 OK
+    res_login = client.post("/api/user/login", json={"username": "daisy", "admin_password": "daisy2026!"})
+    assert res_login.status_code == 200
+    assert res_login.json()["is_admin"] is True
+
+    # 4. Fetch admin user list
     res_users = client.get("/api/admin/users")
     assert res_users.status_code == 200
     data = res_users.json()
@@ -147,12 +156,12 @@ def test_admin_user_management(client):
     target = next(u for u in data["users"] if u["username"] == "regular_engineer")
     target_id = target["id"]
 
-    # 3. Admin cannot delete daisy herself -> 400 Bad Request
+    # 5. Admin cannot delete daisy herself -> 400 Bad Request
     daisy_user = next(u for u in data["users"] if u["username"] == "daisy")
     res_del_daisy = client.delete(f"/api/admin/users/{daisy_user['id']}")
     assert res_del_daisy.status_code == 400
 
-    # 4. Admin deletes regular_engineer -> 200 OK
+    # 6. Admin deletes regular_engineer -> 200 OK
     res_del = client.delete(f"/api/admin/users/{target_id}")
     assert res_del.status_code == 200
     assert res_del.json()["status"] == "deleted"

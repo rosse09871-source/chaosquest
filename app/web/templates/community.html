@@ -64,26 +64,30 @@
             </div>
 
             <!-- User Profile & Action -->
-            <div class="flex items-center space-x-3">
+            <div class="flex items-center space-x-2 sm:space-x-3">
                 {% if user.is_admin %}
-                <button onclick="openAdminUserModal()" class="px-3 py-1.5 rounded-full bg-purple-500/15 text-purple-300 border border-purple-500/30 hover:bg-purple-500/25 transition text-xs font-semibold flex items-center gap-1.5">
+                <button onclick="openAdminUserModal()" class="hidden sm:flex px-3 py-1.5 rounded-full bg-purple-500/15 text-purple-300 border border-purple-500/30 hover:bg-purple-500/25 transition text-xs font-semibold items-center gap-1.5">
                     <i class="fa-solid fa-users-gear text-purple-400"></i>
                     <span>유저 관리</span>
                 </button>
                 {% endif %}
-                <button onclick="openCreatePostModal()" class="bg-indigo-600 hover:bg-indigo-500 text-white font-bold px-4 py-1.5 rounded-full text-xs transition shadow-sm flex items-center gap-1.5">
-                    <i class="fa-solid fa-pen text-[11px]"></i> <span>글 작성하기</span>
+                <button onclick="openCreatePostModal()" class="bg-indigo-600 hover:bg-indigo-500 text-white font-bold px-3 sm:px-4 py-1.5 rounded-full text-xs transition shadow-sm flex items-center gap-1.5">
+                    <i class="fa-solid fa-pen text-[11px]"></i> <span class="hidden sm:inline">글 작성하기</span><span class="sm:hidden">글쓰기</span>
                 </button>
-                <div class="flex items-center space-x-2.5 bg-card/80 px-3 py-1.5 rounded-full border border-borderline text-xs font-mono">
+                <div class="flex items-center space-x-2 bg-card/80 px-2.5 sm:px-3 py-1.5 rounded-full border border-borderline text-xs font-mono">
                     <i class="fa-solid fa-user text-indigo-400"></i>
-                    <span class="font-bold text-white tracking-wide font-sans">{{ user.username }}</span>
+                    <span class="font-bold text-white tracking-wide font-sans max-w-[80px] sm:max-w-none truncate">{{ user.username }}</span>
                     {% if user.is_admin %}
                     <span class="text-[9px] font-mono px-1.5 py-0.5 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/30">ADMIN</span>
                     {% endif %}
-                    <span class="text-indigo-400 font-bold bg-indigo-950/60 px-2 py-0.5 rounded-full border border-indigo-800/40">
+                    <span class="text-indigo-400 font-bold bg-indigo-950/60 px-2 py-0.5 rounded-full border border-indigo-800/40 text-[11px] sm:text-xs">
                         {{ user.total_score }} 점
                     </span>
                 </div>
+                <!-- Mobile Hamburger Toggle Button -->
+                <button onclick="toggleMobileMenu()" class="md:hidden p-2 rounded-xl bg-surface border border-borderline text-slate-300 hover:text-white transition flex items-center justify-center">
+                    <i class="fa-solid fa-bars text-sm"></i>
+                </button>
             </div>
         </div>
     </header>
@@ -236,9 +240,6 @@
                 <div class="flex items-center justify-between text-[11px] text-slate-500 pt-2 border-t border-borderline">
                     <div class="flex items-center space-x-2">
                         <span class="font-semibold text-slate-300 font-sans">{{ post.user.username }}</span>
-                        {% if post.user.is_admin or post.user.username.lower() in ['daisy', 'admin', 'root', 'sre_senior_kim'] %}
-                        <span class="text-[9px] font-mono px-1.5 py-0.5 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/30">ADMIN</span>
-                        {% endif %}
                         <span>·</span>
                         <span class="font-mono text-indigo-400">{{ post.user.total_score }} 점</span>
                     </div>
@@ -470,5 +471,74 @@
         </div>
     </div>
     {% endif %}
+    <!-- Mobile Slide-Over Drawer -->
+    <div id="mobile-menu-drawer" class="fixed inset-0 z-50 hidden transition-all duration-300">
+        <div onclick="toggleMobileMenu()" class="fixed inset-0 bg-black/70 backdrop-blur-sm"></div>
+        <div class="fixed top-0 right-0 bottom-0 w-72 bg-card border-l border-borderline p-6 shadow-2xl flex flex-col justify-between z-10">
+            <div class="space-y-6">
+                <!-- Drawer Header -->
+                <div class="flex items-center justify-between pb-4 border-b border-borderline">
+                    <div class="flex items-center space-x-2">
+                        <div class="w-7 h-7 rounded-lg bg-indigo-600 flex items-center justify-center text-white font-black text-xs">CQ</div>
+                        <span class="font-bold text-white text-sm">ChaosQuest</span>
+                    </div>
+                    <button onclick="toggleMobileMenu()" class="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-surface">
+                        <i class="fa-solid fa-xmark text-base"></i>
+                    </button>
+                </div>
+
+                <!-- User Profile Card -->
+                <div class="bg-surface/80 rounded-2xl p-4 border border-borderline space-y-2">
+                    <div class="flex items-center justify-between text-xs">
+                        <div class="flex items-center space-x-2 font-mono">
+                            <i class="fa-solid fa-user text-indigo-400"></i>
+                            <span class="font-bold text-white">{{ user.username }}</span>
+                            {% if user.is_admin %}
+                            <span class="text-[9px] font-mono px-1.5 py-0.5 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/30">ADMIN</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="text-xs font-mono text-indigo-400 font-bold">
+                        누적 점수: <span class="text-white">{{ user.total_score }} 점</span>
+                    </div>
+                </div>
+
+                <!-- Navigation Links -->
+                <nav class="space-y-1 text-sm font-semibold">
+                    <a href="/" class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-300 hover:bg-white/5 hover:text-white transition">
+                        <i class="fa-solid fa-chart-pie text-indigo-400 w-4"></i>
+                        <span>대시보드</span>
+                    </a>
+                    <a href="/challenges" class="flex items-center justify-between px-4 py-3 rounded-xl text-slate-300 hover:bg-white/5 hover:text-white transition">
+                        <div class="flex items-center gap-3">
+                            <i class="fa-solid fa-layer-group text-cyan-400 w-4"></i>
+                            <span>챌린지 맵</span>
+                        </div>
+                        <span class="text-[11px] font-mono px-2 py-0.5 rounded-full bg-indigo-950/60 text-indigo-300 border border-indigo-800/40">{{ total_stages_count }}</span>
+                    </a>
+                    <a href="/community" class="flex items-center gap-3 px-4 py-3 rounded-xl bg-white/10 text-white font-bold border border-white/15 transition">
+                        <i class="fa-solid fa-comments text-amber-400 w-4"></i>
+                        <span>커뮤니티</span>
+                    </a>
+                    {% if user.is_admin %}
+                    <button onclick="toggleMobileMenu(); openAdminUserModal();" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-purple-300 hover:bg-purple-500/15 transition border border-purple-500/20 text-left">
+                        <i class="fa-solid fa-users-gear text-purple-400 w-4"></i>
+                        <span>유저 관리 (ADMIN)</span>
+                    </button>
+                    {% endif %}
+                </nav>
+            </div>
+
+            <!-- Quick Action Footer in Drawer -->
+            <div class="pt-4 border-t border-borderline space-y-2">
+                <button onclick="toggleMobileMenu(); openCreatePostModal();" class="w-full py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl text-center text-xs transition flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-pen text-[11px]"></i> <span>새 글 작성하기</span>
+                </button>
+                <a href="/challenges" class="w-full py-2.5 bg-white hover:bg-slate-200 text-slate-900 font-bold rounded-xl text-center text-xs transition flex items-center justify-center gap-2 shadow-sm font-mono">
+                    <span>챌린지 도전하기</span> <i class="fa-solid fa-arrow-right text-[10px]"></i>
+                </a>
+            </div>
+        </div>
+    </div>
 </body>
 </html>

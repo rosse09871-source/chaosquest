@@ -55,14 +55,22 @@ def on_startup():
 # -------------------------------------------------------------
 # Dependency: Current User Resolution from Cookie
 # -------------------------------------------------------------
+ADMIN_USERNAMES = {"daisy", "admin", "root", "sre_senior_kim"}
+ADMIN_PASSWORD = os.getenv("CHAOS_ADMIN_PASSWORD", "daisy2026!")
+
+
 def get_current_user_name(request: Request) -> str:
     return request.cookies.get("chaos_username", "Guest_Engineer")
 
 
-def get_current_user_obj(username: str = Depends(get_current_user_name)):
+def get_current_user_obj(request: Request):
+    username = request.cookies.get("chaos_username", "Guest_Engineer")
+    admin_token = request.cookies.get("chaos_admin_token", "")
     with get_db_session() as db:
         user = crud.get_or_create_user(db, username)
-        is_admin = bool(user.is_admin or user.username.lower() in ["daisy", "admin", "root", "sre_senior_kim"])
+        is_admin = False
+        if user.username.lower() in ADMIN_USERNAMES:
+            is_admin = bool(admin_token == "admin_session_valid" or user.is_admin)
         return {
             "id": user.id,
             "username": user.username,
@@ -312,6 +320,7 @@ def post_detail_page(
 # -------------------------------------------------------------
 class LoginRequest(BaseModel):
     username: str
+    admin_password: Optional[str] = None
 
 
 class CreatePostRequest(BaseModel):
@@ -397,12 +406,36 @@ def api_delete_comment(comment_id: int, user: dict = Depends(get_current_user_ob
 def api_login(data: LoginRequest):
     uname = data.username.strip()
     if not uname:
-        raise HTTPException(status_code=400, detail="Username cannot be empty.")
+        raise HTTPException(status_code=400, detail="사용자 닉네임을 입력해 주세요.")
+
+    is_admin_candidate = uname.lower() in ADMIN_USERNAMES
+    admin_authed = False
+
+    if is_admin_candidate:
+        if not data.admin_password or data.admin_password != ADMIN_PASSWORD:
+            raise HTTPException(
+                status_code=401,
+                detail="관리자 예약어 닉네임입니다. 올바른 관리자 비밀번호를 입력해 주세요."
+            )
+        admin_authed = True
 
     with get_db_session() as db:
         user = crud.get_or_create_user(db, uname)
-        resp = JSONResponse({"status": "success", "username": user.username, "total_score": user.total_score})
+        if admin_authed:
+            user.is_admin = True
+            db.commit()
+
+        resp = JSONResponse({
+            "status": "success",
+            "username": user.username,
+            "total_score": user.total_score,
+            "is_admin": bool(user.is_admin or admin_authed),
+        })
         resp.set_cookie(key="chaos_username", value=user.username, max_age=30 * 86400)
+        if admin_authed:
+            resp.set_cookie(key="chaos_admin_token", value="admin_session_valid", max_age=30 * 86400)
+        else:
+            resp.delete_cookie(key="chaos_admin_token")
         return resp
 
 
