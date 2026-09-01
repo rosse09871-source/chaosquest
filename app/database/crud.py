@@ -279,3 +279,189 @@ def get_user_progress_summary(db: Session, user_id: int) -> Dict[str, Any]:
         "cleared_count": len(cleared_stage_ids),
         "cleared_stage_ids": list(cleared_stage_ids),
     }
+
+
+# -------------------------------------------------------------
+# Community Forum CRUD
+# -------------------------------------------------------------
+from app.database.models import Post, Comment, PostLike
+
+
+def create_post(
+    db: Session,
+    user_id: int,
+    title: str,
+    content: str,
+    category: str = "general",
+    stage_id: Optional[str] = None,
+) -> Post:
+    """Creates a new community post."""
+    post = Post(
+        user_id=user_id,
+        title=title.strip(),
+        content=content.strip(),
+        category=category.strip(),
+        stage_id=stage_id.strip() if stage_id else None,
+    )
+    db.add(post)
+    db.flush()
+    return post
+
+
+from sqlalchemy.orm import joinedload
+
+
+def get_posts(
+    db: Session,
+    category: Optional[str] = None,
+    stage_id: Optional[str] = None,
+    search: Optional[str] = None,
+    sort_by: str = "latest",
+    limit: int = 50,
+) -> List[Post]:
+    """Fetches community posts with filtering and sorting."""
+    query = db.query(Post).options(joinedload(Post.user), joinedload(Post.comments))
+    if category and category != "all":
+        query = query.filter(Post.category == category)
+    if stage_id:
+        query = query.filter(Post.stage_id == stage_id)
+    if search:
+        search_pattern = f"%{search.strip()}%"
+        query = query.filter(
+            (Post.title.ilike(search_pattern)) | (Post.content.ilike(search_pattern))
+        )
+
+    if sort_by == "popular":
+        query = query.order_by(Post.like_count.desc(), Post.created_at.desc())
+    else:
+        query = query.order_by(Post.created_at.desc())
+
+    return query.limit(limit).all()
+
+
+def get_post_by_id(db: Session, post_id: int, increment_views: bool = True) -> Optional[Post]:
+    """Fetches a single post by ID, optionally incrementing view count."""
+    post = (
+        db.query(Post)
+        .options(
+            joinedload(Post.user),
+            joinedload(Post.comments).joinedload(Comment.user),
+            joinedload(Post.likes),
+        )
+        .filter(Post.id == post_id)
+        .first()
+    )
+    if post and increment_views:
+        post.views += 1
+        db.flush()
+    return post
+
+
+def add_comment(db: Session, post_id: int, user_id: int, content: str) -> Comment:
+    """Adds a new comment to a post."""
+    comment = Comment(
+        post_id=post_id,
+        user_id=user_id,
+        content=content.strip(),
+    )
+    db.add(comment)
+    db.flush()
+    return comment
+
+
+def toggle_post_like(db: Session, post_id: int, user_id: int) -> Dict[str, Any]:
+    """Toggles like on a post for a user."""
+    post = db.query(Post).filter(Post.id == post_id).first()
+    if not post:
+        return {"status": "not_found", "liked": False, "like_count": 0}
+
+    existing_like = (
+        db.query(PostLike)
+        .filter(PostLike.post_id == post_id, PostLike.user_id == user_id)
+        .first()
+    )
+
+    if existing_like:
+        db.delete(existing_like)
+        post.like_count = max(0, post.like_count - 1)
+        liked = False
+    else:
+        new_like = PostLike(post_id=post_id, user_id=user_id)
+        db.add(new_like)
+        post.like_count += 1
+        liked = True
+
+    db.flush()
+    return {"status": "success", "liked": liked, "like_count": post.like_count}
+
+
+def seed_initial_community_posts(db: Session):
+    """Seeds rich initial posts so the community is engaging from the start."""
+    if db.query(Post).count() > 0:
+        return
+
+    admin = get_or_create_user(db, "SRE_Senior_Kim")
+    admin.total_score = 5400
+    user2 = get_or_create_user(db, "cloud_ninja")
+    user2.total_score = 3850
+    user3 = get_or_create_user(db, "devops_pro")
+    user3.total_score = 2900
+
+    p1 = create_post(
+        db=db,
+        user_id=admin.id,
+        category="writeup",
+        stage_id="101-1",
+        title="[Write-up] INC-101 유령 파일 누수 1초 만에 잡는 awk + kill 원라이너",
+        content=(
+            "안녕하세요! SRE 김수석입니다.\n\n"
+            "INC-101 문제에서 `rm`으로 로그 파일을 지웠는데도 디스크 사용량이 100%로 남아있는 이유는, "
+            "실행 중인 데몬 프로세스가 파일 디스크립터(FD)를 여전히 잡고 있기 때문입니다.\n\n"
+            "### 핵심 원라이너:\n"
+            "```bash\n"
+            "lsof +L1 | awk '/deleted/ {print $2}' | xargs -r kill -9\n"
+            "```\n\n"
+            "위 명령어를 실행하면 `(deleted)` 상태의 unlinked 파일을 물고 있는 모든 PID를 즉시 안전하게 사살하여 디스크 공간을 커널에 반환합니다!"
+        ),
+    )
+    p1.views = 128
+    p1.like_count = 19
+
+    p2 = create_post(
+        db=db,
+        user_id=user2.id,
+        category="war_story",
+        title="새벽 3시에 배포하다 Redis OOM 터졌던 실제 프로덕션 장애 회고",
+        content=(
+            "현업에서 캐시 키에 TTL(만료 시간)을 안 걸어두고 대규모 프로모션을 진행했다가 "
+            "새벽에 메모리가 99.8%까지 차면서 전체 결제 서버가 셧다운되었던 뼈아픈 경험입니다...\n\n"
+            "`maxmemory-policy noeviction` 상태에서는 새 쓰기 요청이 전부 에러를 뱉게 되니, "
+            "반드시 `volatile-lru` 또는 `allkeys-lru` 설정을 기본으로 점검해야 합니다. "
+            "ChaosQuest 602번 트랙 풀면서 그 악몽이 다시 떠올랐네요 ㅎㅎ"
+        ),
+    )
+    p2.views = 254
+    p2.like_count = 32
+
+    p3 = create_post(
+        db=db,
+        user_id=user3.id,
+        category="qna",
+        stage_id="401-1",
+        title="INC-401 Nginx 502 에러 해결할 때 unix domain socket 권한 질문입니다",
+        content=(
+            "Nginx upstream을 127.0.0.1:8000 포트 대신 `/var/run/app.sock` 유닉스 도메인 소켓으로 연결할 때 "
+            "502 Bad Gateway가 계속 뜹니다. `www-data` 사용자의 소켓 파일 읽기/쓰기 권한 문제일까요? "
+            "다른 분들은 어떻게 디버깅하셨는지 궁금합니다!"
+        ),
+    )
+    p3.views = 89
+    p3.like_count = 7
+
+    add_comment(
+        db=db,
+        post_id=p3.id,
+        user_id=admin.id,
+        content="맞습니다! `ls -la /var/run/app.sock`로 소유자와 권한(0660 또는 0666)을 확인하고, `chmod 666 /var/run/app.sock` 또는 `chown www-data:www-data`로 Nginx 워커 프로세스가 소켓에 접근할 수 있도록 열어주면 즉시 해결됩니다.",
+    )
+    db.commit()

@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="ko" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ post.title }} - ChaosQuest 커뮤니티</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Pretendard', 'Inter', '-apple-system', 'sans-serif'],
+                        mono: ['"JetBrains Mono"', 'monospace'],
+                    },
+                    colors: {
+                        void: '#07090e',
+                        surface: '#0d111a',
+                        card: '#121824',
+                        cardhover: '#182030',
+                        borderline: 'rgba(255, 255, 255, 0.08)',
+                        accent: '#6366f1',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Pretendard', sans-serif; }
+    </style>
+</head>
+<body class="bg-void text-slate-100 min-h-screen flex flex-col antialiased selection:bg-indigo-500 selection:text-white">
+
+    <!-- Header Navigation -->
+    <header class="border-b border-borderline bg-surface/80 backdrop-blur-xl sticky top-0 z-40">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center space-x-8">
+                <a href="/" class="flex items-center space-x-3 group">
+                    <div class="w-8 h-8 rounded-lg bg-indigo-500/10 border border-indigo-500/30 flex items-center justify-center text-indigo-400 group-hover:bg-indigo-500/20 transition">
+                        <i class="fa-solid fa-terminal text-sm"></i>
+                    </div>
+                    <span class="text-base font-extrabold tracking-wider font-mono uppercase bg-gradient-to-r from-white via-slate-200 to-slate-400 bg-clip-text text-transparent">
+                        CHAOSQUEST
+                    </span>
+                </a>
+                
+                <nav class="hidden md:flex items-center space-x-1 text-xs font-semibold">
+                    <a href="/" class="px-3.5 py-1.5 rounded-full text-slate-400 hover:text-white hover:bg-white/5 transition flex items-center gap-2">
+                        대시보드
+                    </a>
+                    <a href="/challenges" class="px-3.5 py-1.5 rounded-full text-slate-400 hover:text-white hover:bg-white/5 transition flex items-center gap-2">
+                        챌린지 (54)
+                    </a>
+                    <a href="/community" class="px-3.5 py-1.5 rounded-full bg-white/10 text-white font-bold border border-white/15 transition flex items-center gap-2">
+                        <span class="w-1.5 h-1.5 rounded-full bg-indigo-400"></span> 커뮤니티
+                    </a>
+                </nav>
+            </div>
+
+            <!-- User Profile & Action -->
+            <div class="flex items-center space-x-3">
+                <a href="/community" class="bg-surface hover:bg-card text-slate-300 font-semibold px-3.5 py-1.5 rounded-full border border-borderline text-xs transition flex items-center gap-1.5">
+                    <i class="fa-solid fa-arrow-left text-[10px]"></i> <span>목록으로</span>
+                </a>
+                <div class="flex items-center space-x-2.5 bg-card/80 px-3 py-1.5 rounded-full border border-borderline text-xs font-mono">
+                    <i class="fa-solid fa-user text-indigo-400"></i>
+                    <span class="font-bold text-white tracking-wide font-sans">{{ user.username }}</span>
+                    <span class="text-indigo-400 font-bold bg-indigo-950/60 px-2 py-0.5 rounded-full border border-indigo-800/40">
+                        {{ user.total_score }} 점
+                    </span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Post View Container -->
+    <main class="max-w-4xl mx-auto px-4 sm:px-6 py-8 flex-1 w-full space-y-6">
+        
+        <!-- Post Main Card -->
+        <div class="bg-card rounded-2xl p-6 sm:p-8 border border-borderline space-y-6">
+            
+            <!-- Post Header -->
+            <div class="space-y-3 pb-6 border-b border-borderline">
+                <div class="flex flex-wrap items-center gap-2">
+                    {% if post.category == 'writeup' %}
+                    <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">풀이 팁 (Write-up)</span>
+                    {% elif post.category == 'qna' %}
+                    <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">질문 & 답변 (Q&A)</span>
+                    {% elif post.category == 'war_story' %}
+                    <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-rose-500/10 text-rose-400 border border-rose-500/20">현업 장애 회고</span>
+                    {% elif post.category == 'idea' %}
+                    <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-500/10 text-amber-400 border border-amber-500/20">문제 제안</span>
+                    {% else %}
+                    <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-slate-500/10 text-slate-400 border border-slate-500/20">일반</span>
+                    {% endif %}
+
+                    {% if post.stage_id %}
+                    <a href="/play/{{ post.stage_id }}" class="text-xs font-mono text-indigo-400 bg-surface px-2.5 py-0.5 rounded-full border border-borderline hover:border-indigo-500 transition flex items-center gap-1">
+                        <span>INC-{{ post.stage_id }}</span> <i class="fa-solid fa-arrow-up-right-from-square text-[9px]"></i>
+                    </a>
+                    {% endif %}
+                </div>
+
+                <h1 class="text-xl sm:text-2xl font-bold text-white tracking-tight leading-snug">
+                    {{ post.title }}
+                </h1>
+
+                <div class="flex items-center justify-between text-xs text-slate-400 pt-2 font-mono">
+                    <div class="flex items-center space-x-2">
+                        <span class="font-semibold text-slate-200 font-sans">{{ post.user.username }}</span>
+                        <span>·</span>
+                        <span class="text-indigo-400">{{ post.user.total_score }} 점</span>
+                        <span>·</span>
+                        <span class="text-slate-500 text-[11px]">{{ post.created_at.strftime('%Y-%m-%d %H:%M') }}</span>
+                    </div>
+                    <div class="flex items-center space-x-3 text-slate-500 text-[11px]">
+                        <span>조회수 {{ post.views }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Post Content Body -->
+            <div class="text-sm text-slate-200 leading-relaxed space-y-4 whitespace-pre-wrap font-sans">
+{{ post.content }}
+            </div>
+
+            <!-- Like Upvote Action Button -->
+            <div class="pt-6 border-t border-borderline flex items-center justify-center">
+                <button onclick="toggleLike()" id="btn-like" 
+                    class="px-6 py-2.5 rounded-full border transition flex items-center gap-2 text-xs font-semibold {% if user_liked %}bg-indigo-600 text-white border-indigo-500 shadow-md shadow-indigo-950/60{% else %}bg-surface hover:bg-cardhover text-slate-300 border-borderline{% endif %}">
+                    <i class="fa-solid fa-thumbs-up text-xs"></i> 
+                    <span>추천</span> 
+                    <span id="like-counter" class="font-mono font-bold">{{ post.like_count }}</span>
+                </button>
+            </div>
+
+        </div>
+
+        <!-- Comments Section -->
+        <div class="bg-card rounded-2xl p-6 sm:p-8 border border-borderline space-y-6">
+            <div class="flex items-center justify-between pb-4 border-b border-borderline">
+                <h3 class="text-sm font-bold text-white flex items-center gap-2">
+                    <i class="fa-solid fa-comments text-indigo-400"></i>
+                    <span>댓글 및 토론</span>
+                    <span class="text-xs font-mono text-indigo-400 font-bold bg-indigo-950/60 px-2 py-0.5 rounded-full border border-indigo-800/40">{{ post.comments|length }}개</span>
+                </h3>
+            </div>
+
+            <!-- Comment Input Box -->
+            <div class="space-y-3">
+                <textarea id="comment-input" rows="3" placeholder="의견, 추가 팁, 또는 궁금한 점을 댓글로 남겨보세요..." 
+                    class="w-full bg-surface border border-borderline rounded-xl p-3.5 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500 transition font-sans"></textarea>
+                <div class="flex justify-end">
+                    <button onclick="submitComment()" id="btn-comment" class="bg-indigo-600 hover:bg-indigo-500 text-white font-bold px-4 py-2 rounded-xl text-xs transition flex items-center gap-1.5 shadow-sm">
+                        <span>댓글 등록</span> <i class="fa-solid fa-paper-plane text-[10px]"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Comments List -->
+            <div id="comments-list" class="space-y-3 pt-2">
+                {% if post.comments|length == 0 %}
+                <div class="text-center py-6 text-slate-500 text-xs">
+                    아직 등록된 댓글이 없습니다. 첫 번째 댓글을 남겨보세요!
+                </div>
+                {% endif %}
+
+                {% for comment in post.comments %}
+                <div class="bg-surface rounded-xl p-4 border border-borderline space-y-2 text-xs">
+                    <div class="flex items-center justify-between text-slate-400 font-mono text-[11px]">
+                        <div class="flex items-center space-x-2">
+                            <span class="font-bold text-white font-sans">{{ comment.user.username }}</span>
+                            <span class="text-indigo-400">{{ comment.user.total_score }} 점</span>
+                        </div>
+                        <span class="text-slate-500">{{ comment.created_at.strftime('%Y-%m-%d %H:%M') }}</span>
+                    </div>
+                    <p class="text-slate-200 leading-relaxed font-sans whitespace-pre-wrap">{{ comment.content }}</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Scripts -->
+    <script>
+        const POST_ID = {{ post.id }};
+
+        async function toggleLike() {
+            const res = await fetch(`/api/community/posts/${POST_ID}/like`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' }
+            });
+            if (res.ok) {
+                const data = await res.json();
+                document.getElementById('like-counter').innerText = data.like_count;
+                const btn = document.getElementById('btn-like');
+                if (data.liked) {
+                    btn.classList.remove('bg-surface', 'text-slate-300', 'border-borderline');
+                    btn.classList.add('bg-indigo-600', 'text-white', 'border-indigo-500', 'shadow-md', 'shadow-indigo-950/60');
+                } else {
+                    btn.classList.remove('bg-indigo-600', 'text-white', 'border-indigo-500', 'shadow-md', 'shadow-indigo-950/60');
+                    btn.classList.add('bg-surface', 'text-slate-300', 'border-borderline');
+                }
+            }
+        }
+
+        async function submitComment() {
+            const input = document.getElementById('comment-input');
+            const content = input.value.trim();
+            if (!content) {
+                alert("댓글 내용을 입력해 주세요.");
+                return;
+            }
+
+            const btn = document.getElementById('btn-comment');
+            btn.disabled = true;
+
+            const res = await fetch(`/api/community/posts/${POST_ID}/comments`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ content: content })
+            });
+
+            if (res.ok) {
+                window.location.reload();
+            } else {
+                alert("댓글 등록에 실패했습니다.");
+                btn.disabled = false;
+            }
+        }
+    </script>
+</body>
+</html>

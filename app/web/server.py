@@ -43,6 +43,10 @@ def on_startup():
     with get_db_session() as db:
         sync_challenges_to_db(db)
         try:
+            crud.seed_initial_community_posts(db)
+        except Exception:
+            pass
+        try:
             prune_expired_sessions(db, orchestrator)
         except Exception:
             pass
@@ -202,11 +206,120 @@ def workspace_page(stage_id: str, request: Request, user: dict = Depends(get_cur
     )
 
 
+@app.get("/community", response_class=HTMLResponse)
+def community_page(
+    request: Request,
+    category: Optional[str] = None,
+    search: Optional[str] = None,
+    sort: str = "latest",
+    user: dict = Depends(get_current_user_obj),
+):
+    """Community Forum Home Page."""
+    with get_db_session() as db:
+        posts = crud.get_posts(db, category=category, search=search, sort_by=sort)
+        stats = crud.get_user_progress_summary(db, user["id"])
+    return templates.TemplateResponse(
+        request=request,
+        name="community.html",
+        context={
+            "user": user,
+            "stats": stats,
+            "posts": posts,
+            "selected_category": category or "all",
+            "selected_sort": sort,
+            "search_query": search or "",
+            "docker_available": orchestrator.is_docker_available,
+        },
+    )
+
+
+@app.get("/community/{post_id}", response_class=HTMLResponse)
+def post_detail_page(
+    post_id: int,
+    request: Request,
+    user: dict = Depends(get_current_user_obj),
+):
+    """Community Post Detail & Discussion Page."""
+    with get_db_session() as db:
+        post = crud.get_post_by_id(db, post_id, increment_views=True)
+        if not post:
+            raise HTTPException(status_code=404, detail="게시글을 찾을 수 없습니다.")
+        stats = crud.get_user_progress_summary(db, user["id"])
+        user_liked = (
+            db.query(models.PostLike)
+            .filter(models.PostLike.post_id == post_id, models.PostLike.user_id == user["id"])
+            .first()
+            is not None
+        )
+    return templates.TemplateResponse(
+        request=request,
+        name="post_detail.html",
+        context={
+            "user": user,
+            "stats": stats,
+            "post": post,
+            "user_liked": user_liked,
+            "docker_available": orchestrator.is_docker_available,
+        },
+    )
+
+
 # -------------------------------------------------------------
 # REST API Endpoints
 # -------------------------------------------------------------
 class LoginRequest(BaseModel):
     username: str
+
+
+class CreatePostRequest(BaseModel):
+    title: str
+    content: str
+    category: str = "general"
+    stage_id: Optional[str] = None
+
+
+class CreateCommentRequest(BaseModel):
+    content: str
+
+
+@app.post("/api/community/posts")
+def api_create_post(data: CreatePostRequest, user: dict = Depends(get_current_user_obj)):
+    if not data.title.strip() or not data.content.strip():
+        raise HTTPException(status_code=400, detail="제목과 내용을 모두 입력해주세요.")
+    with get_db_session() as db:
+        post = crud.create_post(
+            db=db,
+            user_id=user["id"],
+            title=data.title,
+            content=data.content,
+            category=data.category,
+            stage_id=data.stage_id,
+        )
+        post_id = post.id
+    return {"status": "success", "post_id": post_id}
+
+
+@app.post("/api/community/posts/{post_id}/comments")
+def api_create_comment(
+    post_id: int, data: CreateCommentRequest, user: dict = Depends(get_current_user_obj)
+):
+    if not data.content.strip():
+        raise HTTPException(status_code=400, detail="댓글 내용을 입력해주세요.")
+    with get_db_session() as db:
+        comment = crud.add_comment(
+            db=db,
+            post_id=post_id,
+            user_id=user["id"],
+            content=data.content,
+        )
+    return {"status": "success", "comment_id": comment.id}
+
+
+@app.post("/api/community/posts/{post_id}/like")
+def api_toggle_like(post_id: int, user: dict = Depends(get_current_user_obj)):
+    with get_db_session() as db:
+        res = crud.toggle_post_like(db=db, post_id=post_id, user_id=user["id"])
+    return res
 
 
 @app.post("/api/user/login")

@@ -5,7 +5,8 @@ from app.web.server import app
 
 @pytest.fixture
 def client():
-    return TestClient(app)
+    with TestClient(app) as client:
+        yield client
 
 
 def test_dashboard_page(client):
@@ -70,3 +71,46 @@ def test_api_stage_lifecycle(client):
     # 4. Verify stage
     res_verify = client.post("/api/stages/101-1/verify", json={"session_id": "test_web_sess"})
     assert res_verify.status_code == 200
+
+
+def test_community_flow(client):
+    # 1. Access community page
+    res_comm = client.get("/community")
+    assert res_comm.status_code == 200
+    assert "커뮤니티" in res_comm.text
+
+    # 2. Create a new post
+    res_post = client.post(
+        "/api/community/posts",
+        json={
+            "title": "테스트 게시글입니다",
+            "content": "이것은 커뮤니티 테스트 본문입니다.",
+            "category": "qna",
+            "stage_id": "101-1",
+        },
+    )
+    assert res_post.status_code == 200
+    data_post = res_post.json()
+    assert data_post["status"] == "success"
+    post_id = data_post["post_id"]
+
+    # 3. View post detail page
+    res_detail = client.get(f"/community/{post_id}")
+    assert res_detail.status_code == 200
+    assert "테스트 게시글입니다" in res_detail.text
+
+    # 4. Add a comment
+    res_comment = client.post(
+        f"/api/community/posts/{post_id}/comments",
+        json={"content": "테스트 댓글 내용입니다."},
+    )
+    assert res_comment.status_code == 200
+    data_comment = res_comment.json()
+    assert data_comment["status"] == "success"
+
+    # 5. Toggle like
+    res_like = client.post(f"/api/community/posts/{post_id}/like")
+    assert res_like.status_code == 200
+    data_like = res_like.json()
+    assert data_like["status"] == "success"
+    assert data_like["like_count"] == 1

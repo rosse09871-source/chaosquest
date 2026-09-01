@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="ko" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>커뮤니티 - ChaosQuest</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Pretendard', 'Inter', '-apple-system', 'sans-serif'],
+                        mono: ['"JetBrains Mono"', 'monospace'],
+                    },
+                    colors: {
+                        void: '#07090e',
+                        surface: '#0d111a',
+                        card: '#121824',
+                        cardhover: '#182030',
+                        borderline: 'rgba(255, 255, 255, 0.08)',
+                        accent: '#6366f1',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Pretendard', sans-serif; }
+    </style>
+</head>
+<body class="bg-void text-slate-100 min-h-screen flex flex-col antialiased selection:bg-indigo-500 selection:text-white">
+
+    <!-- Header Navigation -->
+    <header class="border-b border-borderline bg-surface/80 backdrop-blur-xl sticky top-0 z-40">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center space-x-8">
+                <a href="/" class="flex items-center space-x-3 group">
+                    <div class="w-8 h-8 rounded-lg bg-indigo-500/10 border border-indigo-500/30 flex items-center justify-center text-indigo-400 group-hover:bg-indigo-500/20 transition">
+                        <i class="fa-solid fa-terminal text-sm"></i>
+                    </div>
+                    <span class="text-base font-extrabold tracking-wider font-mono uppercase bg-gradient-to-r from-white via-slate-200 to-slate-400 bg-clip-text text-transparent">
+                        CHAOSQUEST
+                    </span>
+                </a>
+                
+                <nav class="hidden md:flex items-center space-x-1 text-xs font-semibold">
+                    <a href="/" class="px-3.5 py-1.5 rounded-full text-slate-400 hover:text-white hover:bg-white/5 transition flex items-center gap-2">
+                        대시보드
+                    </a>
+                    <a href="/challenges" class="px-3.5 py-1.5 rounded-full text-slate-400 hover:text-white hover:bg-white/5 transition flex items-center gap-2">
+                        챌린지 (54)
+                    </a>
+                    <a href="/community" class="px-3.5 py-1.5 rounded-full bg-white/10 text-white font-bold border border-white/15 transition flex items-center gap-2">
+                        <span class="w-1.5 h-1.5 rounded-full bg-indigo-400"></span> 커뮤니티
+                    </a>
+                </nav>
+            </div>
+
+            <!-- User Profile & Action -->
+            <div class="flex items-center space-x-3">
+                <button onclick="openCreatePostModal()" class="bg-indigo-600 hover:bg-indigo-500 text-white font-bold px-4 py-1.5 rounded-full text-xs transition shadow-sm flex items-center gap-1.5">
+                    <i class="fa-solid fa-pen text-[11px]"></i> <span>글 작성하기</span>
+                </button>
+                <div class="flex items-center space-x-2.5 bg-card/80 px-3 py-1.5 rounded-full border border-borderline text-xs font-mono">
+                    <i class="fa-solid fa-user text-indigo-400"></i>
+                    <span class="font-bold text-white tracking-wide font-sans">{{ user.username }}</span>
+                    <span class="text-indigo-400 font-bold bg-indigo-950/60 px-2 py-0.5 rounded-full border border-indigo-800/40">
+                        {{ user.total_score }} 점
+                    </span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Community Container -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1 w-full space-y-6">
+        
+        <!-- Header Banner & Search Toolbar -->
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-card rounded-2xl p-6 border border-borderline">
+            <div class="space-y-1">
+                <div class="text-[11px] font-mono uppercase tracking-wider text-indigo-400 font-bold">엔지니어 광장</div>
+                <h1 class="text-xl font-bold text-white tracking-tight">
+                    SRE & DevOps 커뮤니티
+                </h1>
+                <p class="text-xs text-slate-400">
+                    인시던트 해결 노하우(Write-up), 기술 Q&A, 현업 장애 회고 및 신규 시나리오를 자유롭게 공유하세요.
+                </p>
+            </div>
+
+            <!-- Search Box -->
+            <form method="GET" action="/community" class="flex items-center gap-2 shrink-0">
+                <input type="hidden" name="category" value="{{ selected_category }}">
+                <div class="relative">
+                    <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500 text-xs"></i>
+                    <input type="text" name="search" value="{{ search_query }}" placeholder="게시글 검색..." 
+                        class="bg-surface border border-borderline rounded-full pl-9 pr-4 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 w-48 sm:w-64 transition">
+                </div>
+                <button type="submit" class="bg-surface hover:bg-cardhover text-slate-300 px-3.5 py-2 rounded-full border border-borderline text-xs font-semibold transition">
+                    검색
+                </button>
+            </form>
+        </div>
+
+        <!-- Category Tabs & Sort Controls -->
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 text-xs">
+            
+            <!-- Category Pills -->
+            <div class="flex flex-wrap items-center gap-2">
+                <a href="/community?category=all{% if search_query %}&search={{ search_query }}{% endif %}" 
+                    class="px-3.5 py-1.5 rounded-full border transition font-semibold {% if selected_category == 'all' %}bg-white/10 text-white border-white/20{% else %}bg-card text-slate-400 border-borderline hover:text-white{% endif %}">
+                    전체보기
+                </a>
+                <a href="/community?category=writeup{% if search_query %}&search={{ search_query }}{% endif %}" 
+                    class="px-3.5 py-1.5 rounded-full border transition font-semibold {% if selected_category == 'writeup' %}bg-indigo-500/20 text-indigo-300 border-indigo-500/40{% else %}bg-card text-slate-400 border-borderline hover:text-white{% endif %}">
+                    풀이 팁 (Write-up)
+                </a>
+                <a href="/community?category=qna{% if search_query %}&search={{ search_query }}{% endif %}" 
+                    class="px-3.5 py-1.5 rounded-full border transition font-semibold {% if selected_category == 'qna' %}bg-cyan-500/20 text-cyan-300 border-cyan-500/40{% else %}bg-card text-slate-400 border-borderline hover:text-white{% endif %}">
+                    질문 & 답변 (Q&A)
+                </a>
+                <a href="/community?category=war_story{% if search_query %}&search={{ search_query }}{% endif %}" 
+                    class="px-3.5 py-1.5 rounded-full border transition font-semibold {% if selected_category == 'war_story' %}bg-rose-500/20 text-rose-300 border-rose-500/40{% else %}bg-card text-slate-400 border-borderline hover:text-white{% endif %}">
+                    현업 장애 회고
+                </a>
+                <a href="/community?category=idea{% if search_query %}&search={{ search_query }}{% endif %}" 
+                    class="px-3.5 py-1.5 rounded-full border transition font-semibold {% if selected_category == 'idea' %}bg-amber-500/20 text-amber-300 border-amber-500/40{% else %}bg-card text-slate-400 border-borderline hover:text-white{% endif %}">
+                    문제 제안 & 피드백
+                </a>
+            </div>
+
+            <!-- Sort Toggle -->
+            <div class="flex items-center gap-1 font-mono text-[11px] self-end sm:self-auto">
+                <a href="/community?category={{ selected_category }}&sort=latest{% if search_query %}&search={{ search_query }}{% endif %}" 
+                    class="px-2.5 py-1 rounded-md transition {% if selected_sort == 'latest' %}text-indigo-400 font-bold bg-white/5{% else %}text-slate-500 hover:text-slate-300{% endif %}">
+                    최신순
+                </a>
+                <span class="text-slate-700">|</span>
+                <a href="/community?category={{ selected_category }}&sort=popular{% if search_query %}&search={{ search_query }}{% endif %}" 
+                    class="px-2.5 py-1 rounded-md transition {% if selected_sort == 'popular' %}text-indigo-400 font-bold bg-white/5{% else %}text-slate-500 hover:text-slate-300{% endif %}">
+                    추천순
+                </a>
+            </div>
+
+        </div>
+
+        <!-- Post List (Bento Stack) -->
+        <div class="space-y-3">
+            {% if posts|length == 0 %}
+            <div class="bg-card rounded-2xl p-12 text-center border border-borderline space-y-3">
+                <div class="w-12 h-12 rounded-2xl bg-surface border border-borderline flex items-center justify-center text-slate-500 mx-auto text-lg">
+                    <i class="fa-solid fa-inbox"></i>
+                </div>
+                <h3 class="text-sm font-bold text-white">등록된 게시글이 없습니다.</h3>
+                <p class="text-xs text-slate-400">첫 번째 질문이나 풀이 팁을 공유해 보세요!</p>
+                <button onclick="openCreatePostModal()" class="mt-2 bg-indigo-600 hover:bg-indigo-500 text-white font-bold px-4 py-2 rounded-full text-xs transition">
+                    첫 글 작성하기
+                </button>
+            </div>
+            {% endif %}
+
+            {% for post in posts %}
+            <a href="/community/{{ post.id }}" class="block bg-card hover:bg-cardhover rounded-2xl p-5 border border-borderline hover:border-slate-700 transition space-y-3">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                    <div class="flex items-center space-x-2">
+                        {% if post.category == 'writeup' %}
+                        <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">풀이 팁</span>
+                        {% elif post.category == 'qna' %}
+                        <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">Q&A</span>
+                        {% elif post.category == 'war_story' %}
+                        <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-500/10 text-rose-400 border border-rose-500/20">장애 회고</span>
+                        {% elif post.category == 'idea' %}
+                        <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/10 text-amber-400 border border-amber-500/20">문제 제안</span>
+                        {% else %}
+                        <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-500/10 text-slate-400 border border-slate-500/20">일반</span>
+                        {% endif %}
+
+                        {% if post.stage_id %}
+                        <span class="text-[10px] font-mono text-slate-400 bg-surface px-2 py-0.5 rounded border border-borderline">
+                            INC-{{ post.stage_id }}
+                        </span>
+                        {% endif %}
+
+                        <h2 class="font-bold text-white text-sm hover:text-indigo-400 transition">{{ post.title }}</h2>
+                    </div>
+
+                    <div class="flex items-center space-x-4 text-slate-400 text-xs font-mono self-end sm:self-auto">
+                        <span class="flex items-center gap-1">
+                            <i class="fa-solid fa-thumbs-up text-indigo-400 text-[10px]"></i> {{ post.like_count }}
+                        </span>
+                        <span class="flex items-center gap-1">
+                            <i class="fa-solid fa-comment text-slate-500 text-[10px]"></i> {{ post.comments|length }}
+                        </span>
+                        <span class="flex items-center gap-1">
+                            <i class="fa-solid fa-eye text-slate-500 text-[10px]"></i> {{ post.views }}
+                        </span>
+                    </div>
+                </div>
+
+                <p class="text-xs text-slate-400 line-clamp-2 leading-relaxed">
+                    {{ post.content }}
+                </p>
+
+                <div class="flex items-center justify-between text-[11px] text-slate-500 pt-2 border-t border-borderline">
+                    <div class="flex items-center space-x-2">
+                        <span class="font-semibold text-slate-300 font-sans">{{ post.user.username }}</span>
+                        <span>·</span>
+                        <span class="font-mono text-indigo-400">{{ post.user.total_score }} 점</span>
+                    </div>
+                    <div class="font-mono text-[10px]">
+                        {{ post.created_at.strftime('%Y-%m-%d %H:%M') }}
+                    </div>
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+
+    </main>
+
+    <!-- Create Post Modal -->
+    <div id="create-post-modal" class="fixed inset-0 bg-black/90 backdrop-blur-xl z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-card border border-borderline rounded-3xl max-w-2xl w-full p-6 sm:p-8 shadow-2xl relative space-y-5">
+            <div class="flex items-center justify-between border-b border-borderline pb-4">
+                <div class="space-y-0.5">
+                    <h2 class="text-lg font-bold text-white">새 게시글 작성</h2>
+                    <p class="text-xs text-slate-400">커뮤니티에 질문이나 유용한 팁을 작성하세요.</p>
+                </div>
+                <button onclick="closeCreatePostModal()" class="text-slate-400 hover:text-white text-lg">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <div class="space-y-4 text-xs">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                        <label class="block font-semibold text-slate-300 mb-1">카테고리</label>
+                        <select id="post-category" class="w-full bg-surface border border-borderline rounded-xl px-3.5 py-2.5 text-white focus:outline-none focus:border-indigo-500 transition font-sans">
+                            <option value="writeup">풀이 팁 (Write-up)</option>
+                            <option value="qna">질문 & 답변 (Q&A)</option>
+                            <option value="war_story">현업 장애 회고</option>
+                            <option value="idea">문제 제안 & 피드백</option>
+                            <option value="general">일반 토론</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block font-semibold text-slate-300 mb-1">연관 인시던트 (선택)</label>
+                        <input id="post-stage-id" type="text" placeholder="예: 101-1, 401-2" 
+                            class="w-full bg-surface border border-borderline rounded-xl px-3.5 py-2.5 text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500 transition font-mono">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block font-semibold text-slate-300 mb-1">제목</label>
+                    <input id="post-title" type="text" placeholder="간결하고 명확한 제목을 입력하세요." 
+                        class="w-full bg-surface border border-borderline rounded-xl px-3.5 py-2.5 text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500 transition">
+                </div>
+
+                <div>
+                    <label class="block font-semibold text-slate-300 mb-1">본문 내용 (마크다운 지원)</label>
+                    <textarea id="post-content" rows="8" placeholder="상세한 내용, 발생한 에러 로그, 원라이너 명령어 등을 작성해주세요." 
+                        class="w-full bg-surface border border-borderline rounded-xl p-3.5 text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500 transition font-sans"></textarea>
+                </div>
+            </div>
+
+            <div class="flex items-center justify-end gap-2 pt-2">
+                <button onclick="closeCreatePostModal()" class="px-4 py-2.5 rounded-xl border border-borderline text-slate-400 hover:text-white transition text-xs font-semibold">
+                    취소
+                </button>
+                <button onclick="submitNewPost()" id="btn-submit-post" class="px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold transition text-xs flex items-center gap-1.5">
+                    <span>게시글 등록</span> <i class="fa-solid fa-arrow-right text-[10px]"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script>
+        function openCreatePostModal() {
+            document.getElementById('create-post-modal').classList.remove('hidden');
+        }
+        function closeCreatePostModal() {
+            document.getElementById('create-post-modal').classList.add('hidden');
+        }
+
+        async function submitNewPost() {
+            const title = document.getElementById('post-title').value.trim();
+            const content = document.getElementById('post-content').value.trim();
+            const category = document.getElementById('post-category').value;
+            const stageId = document.getElementById('post-stage-id').value.trim();
+
+            if (!title || !content) {
+                alert("제목과 본문을 모두 입력해 주세요.");
+                return;
+            }
+
+            const btn = document.getElementById('btn-submit-post');
+            btn.disabled = true;
+            btn.innerText = "등록 중...";
+
+            const res = await fetch('/api/community/posts', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    title: title,
+                    content: content,
+                    category: category,
+                    stage_id: stageId || null
+                })
+            });
+
+            if (res.ok) {
+                const data = await res.json();
+                window.location.href = `/community/${data.post_id}`;
+            } else {
+                alert("게시글 등록에 실패했습니다.");
+                btn.disabled = false;
+                btn.innerText = "게시글 등록";
+            }
+        }
+    </script>
+</body>
+</html>
