@@ -65,12 +65,20 @@
             {% endif %}
         </div>
 
-        <div class="flex items-center space-x-4 font-mono">
+        <div class="flex items-center space-x-3 font-mono">
+            <!-- Start Incident Action Button (Hybrid Trigger 1) -->
+            <button id="btn-start-incident" onclick="startIncidentTracking()" 
+                class="bg-indigo-600 hover:bg-indigo-500 text-white font-bold px-3.5 py-1.5 rounded-full text-xs transition flex items-center gap-1.5 shadow-md shadow-indigo-950/60 font-sans cursor-pointer animate-pulse hover:animate-none">
+                <i class="fa-solid fa-play text-[10px]"></i>
+                <span id="start-btn-text">대응 시작</span>
+            </button>
+
             <!-- Timer Display -->
-            <div class="flex items-center space-x-2 bg-surface px-3 py-1 rounded-full border border-borderline text-xs">
-                <span class="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse"></span>
-                <span id="timer-display" class="text-slate-200 font-bold">00:00</span>
+            <div id="timer-badge" class="flex items-center space-x-2 bg-surface px-3 py-1.5 rounded-full border border-borderline text-xs transition">
+                <span id="timer-dot" class="w-1.5 h-1.5 rounded-full bg-slate-500"></span>
+                <span id="timer-display" class="text-slate-400 font-bold">00:00 [대기]</span>
             </div>
+
             <!-- User Status -->
             <div class="flex items-center space-x-2 text-xs">
                 <span class="text-slate-400 font-sans">{{ user.username }}</span>
@@ -217,8 +225,11 @@
         <div class="w-full lg:w-1/2 flex flex-col bg-void overflow-hidden relative">
             <div class="bg-surface/80 border-b border-borderline px-4 py-2 flex items-center justify-between text-xs font-mono text-slate-400 shrink-0">
                 <div class="flex items-center space-x-2">
-                    <span class="w-2 h-2 rounded-full bg-slate-700 inline-block"></span>
-                    <span class="text-slate-300">sandbox:bash</span>
+                    <span id="terminal-live-dot" class="w-2 h-2 rounded-full bg-emerald-500/80 inline-block"></span>
+                    <span class="text-slate-300 font-semibold">sandbox:bash</span>
+                    <span id="terminal-status-hint" class="text-[10px] text-indigo-300 bg-indigo-500/15 px-2 py-0.5 rounded-full border border-indigo-500/30 transition">
+                        키 입력 또는 상단 버튼 클릭 시 타이머 시작
+                    </span>
                 </div>
                 <span class="text-[10px] text-slate-500 uppercase tracking-wider">LIVE PTY</span>
             </div>
@@ -280,15 +291,57 @@
             document.getElementById(`tab-btn-${tabId}`).classList.remove('border-transparent', 'text-slate-400');
         }
 
-        // Live Timer
+        // Tracking State & Hybrid Timer
+        let isTrackingStarted = false;
         let seconds = 0;
-        const timerEl = document.getElementById('timer-display');
-        setInterval(() => {
-            seconds++;
-            const m = String(Math.floor(seconds / 60)).padStart(2, '0');
-            const s = String(seconds % 60).padStart(2, '0');
-            timerEl.innerText = `${m}:${s}`;
-        }, 1000);
+        let timerInterval = null;
+
+        function startIncidentTracking() {
+            if (isTrackingStarted) return;
+            isTrackingStarted = true;
+
+            // Update UI Button (Hybrid Trigger 1)
+            const btn = document.getElementById('btn-start-incident');
+            if (btn) {
+                btn.classList.remove('bg-indigo-600', 'hover:bg-indigo-500', 'animate-pulse');
+                btn.classList.add('bg-emerald-500/15', 'text-emerald-400', 'border', 'border-emerald-500/30', 'cursor-default');
+                btn.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> <span>대응 진행 중</span>`;
+                btn.onclick = null;
+            }
+
+            // Update Timer Badge
+            const timerBadge = document.getElementById('timer-badge');
+            if (timerBadge) {
+                timerBadge.classList.remove('border-borderline');
+                timerBadge.classList.add('border-indigo-500/40', 'bg-indigo-950/20');
+            }
+            const timerDot = document.getElementById('timer-dot');
+            if (timerDot) {
+                timerDot.className = 'w-1.5 h-1.5 rounded-full bg-indigo-400 animate-pulse';
+            }
+            const timerEl = document.getElementById('timer-display');
+            if (timerEl) {
+                timerEl.className = 'text-white font-bold font-mono';
+                timerEl.innerText = '00:00';
+            }
+
+            // Update Terminal Status Hint
+            const terminalHint = document.getElementById('terminal-status-hint');
+            if (terminalHint) {
+                terminalHint.innerText = '대응 측정 진행 중 (LIVE)';
+                terminalHint.className = 'text-[10px] text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20 transition';
+            }
+
+            // Start Ticking
+            timerInterval = setInterval(() => {
+                seconds++;
+                const m = String(Math.floor(seconds / 60)).padStart(2, '0');
+                const s = String(seconds % 60).padStart(2, '0');
+                if (timerEl) {
+                    timerEl.innerText = `${m}:${s}`;
+                }
+            }, 1000);
+        }
 
         // Terminal Initialization (Xterm.js + WebSocket)
         let term, fitAddon, socket;
@@ -328,6 +381,10 @@
             };
 
             term.onData((data) => {
+                // Hybrid Trigger 2: Start timer automatically on first keypress
+                if (!isTrackingStarted) {
+                    startIncidentTracking();
+                }
                 if (socket.readyState === WebSocket.OPEN) {
                     socket.send(data);
                 }
@@ -429,6 +486,10 @@ ${data.advice}
 
         // Verify and Submit
         async function verifyIncident() {
+            if (timerInterval) {
+                clearInterval(timerInterval);
+            }
+
             const btn = document.getElementById('btn-verify');
             btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin mr-1"></i> 검증 중...`;
             btn.disabled = true;
@@ -456,7 +517,7 @@ ${data.advice}
 
                 document.getElementById('clear-modal').classList.remove('hidden');
             } else {
-                alert(`❌ 검증 실패:\n\n${data.message || '아직 장애 원인이 완벽히 해결되지 않았습니다.'}`);
+                alert(`검증 실패:\n\n${data.message || '아직 장애 원인이 완벽히 해결되지 않았습니다.'}`);
             }
         }
 
