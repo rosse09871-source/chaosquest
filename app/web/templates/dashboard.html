@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ChaosQuest - SRE & Infrastructure Arena</title>
+    <title>ChaosQuest - SRE & 인프라 장애 해결 아레나</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script>
         tailwind.config = {
             darkMode: 'class',
@@ -34,7 +34,7 @@
     <style>
         body { font-family: 'Pretendard', sans-serif; }
         .gradient-glow {
-            background: radial-gradient(circle at 50% 0%, rgba(99, 102, 241, 0.15), transparent 70%);
+            background: radial-gradient(circle at 50% 0%, rgba(99, 102, 241, 0.12), transparent 65%);
         }
         .neon-border {
             box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.08), 0 8px 24px -4px rgba(0, 0, 0, 0.5);
@@ -59,28 +59,28 @@
                     </span>
                 </a>
                 
-                <nav class="hidden md:flex items-center space-x-1 text-xs font-mono uppercase tracking-wider">
+                <nav class="hidden md:flex items-center space-x-1 text-xs font-semibold">
                     <a href="/" class="px-3.5 py-1.5 rounded-full bg-white/10 text-white font-bold border border-white/15 transition flex items-center gap-2">
-                        <span class="w-1.5 h-1.5 rounded-full bg-indigo-400"></span> DASHBOARD
+                        <span class="w-1.5 h-1.5 rounded-full bg-indigo-400"></span> 대시보드
                     </a>
                     <a href="/challenges" class="px-3.5 py-1.5 rounded-full text-slate-400 hover:text-white hover:bg-white/5 transition flex items-center gap-2">
-                        CHALLENGES (54)
+                        인시던트 챌린지 (54)
                     </a>
                 </nav>
             </div>
 
             <!-- User Profile & Action -->
             <div class="flex items-center space-x-3">
-                <a href="/challenges" class="bg-white hover:bg-slate-200 text-slate-900 font-bold px-4 py-1.5 rounded-full text-xs font-mono tracking-wider transition shadow-sm flex items-center gap-1.5">
-                    START ARENA <i class="fa-solid fa-arrow-right text-[10px]"></i>
+                <a href="/challenges" class="bg-white hover:bg-slate-200 text-slate-900 font-bold px-4 py-1.5 rounded-full text-xs transition shadow-sm flex items-center gap-1.5">
+                    <span>챌린지 시작</span> <i class="fa-solid fa-arrow-right text-[10px]"></i>
                 </a>
                 <div class="flex items-center space-x-2.5 bg-card/80 px-3 py-1.5 rounded-full border border-borderline text-xs font-mono">
                     <i class="fa-solid fa-user text-indigo-400"></i>
-                    <span class="font-bold text-white tracking-wide" id="user-display">{{ user.username }}</span>
+                    <span class="font-bold text-white tracking-wide font-sans" id="user-display">{{ user.username }}</span>
                     <span class="text-indigo-400 font-bold bg-indigo-950/60 px-2 py-0.5 rounded-full border border-indigo-800/40">
-                        {{ user.total_score }} PTS
+                        {{ user.total_score }} 점
                     </span>
-                    <button onclick="openLoginModal()" title="Edit Nickname" class="text-slate-400 hover:text-white ml-1">
+                    <button onclick="openLoginModal()" title="닉네임 변경" class="text-slate-400 hover:text-white ml-1">
                         <i class="fa-solid fa-pen-to-square text-[11px]"></i>
                     </button>
                 </div>
@@ -95,37 +95,37 @@
         <div class="relative overflow-hidden rounded-3xl bg-gradient-to-b from-surface to-card border border-borderline p-8 sm:p-10 neon-border">
             <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-8 relative z-10">
                 <div class="max-w-2xl space-y-3">
-                    <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/10 text-indigo-300 border border-indigo-500/20 text-[11px] font-mono tracking-wider uppercase">
+                    <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/10 text-indigo-300 border border-indigo-500/20 text-[11px] font-mono tracking-wider">
                         <span class="w-1.5 h-1.5 rounded-full bg-indigo-400 animate-pulse"></span>
-                        Next-Gen SRE TroubleShooting Platform
+                        차세대 SRE & 데브옵스 트러블슈팅 아레나
                     </div>
-                    <h1 class="text-2xl sm:text-4xl font-extrabold text-white tracking-tight">
-                        Where Production Incidents Meet Resolution.
+                    <h1 class="text-2xl sm:text-4xl font-extrabold text-white tracking-tight leading-tight">
+                        실제 프로덕션 장애를 진단하고<br>해결하는 엔지니어링 아레나
                     </h1>
                     <p class="text-slate-400 text-sm leading-relaxed max-w-xl">
-                        Investigate real-world kernel, network, reverse proxy, and cloud security incidents in isolated sandboxes with AI Mentor guidance.
+                        격리된 우분투 샌드박스에서 파일시스템, 프로세스, DNS, Nginx, Docker, DB, AWS 보안 장애를 실시간으로 조사하고 AI 시니어 사수(김수석)의 1:1 코칭을 받으세요.
                     </p>
                 </div>
 
                 <div class="flex flex-col sm:flex-row gap-3 shrink-0">
-                    <a href="/challenges" class="py-3 px-6 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 hover:opacity-95 text-white font-bold rounded-full text-center text-xs font-mono tracking-wider uppercase transition flex items-center justify-center gap-2 shadow-lg shadow-indigo-950/60">
-                        <span>EXPLORE CHALLENGES</span> <i class="fa-solid fa-arrow-right text-[10px]"></i>
+                    <a href="/challenges" class="py-3 px-6 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 hover:opacity-95 text-white font-bold rounded-full text-center text-xs transition flex items-center justify-center gap-2 shadow-lg shadow-indigo-950/60 font-mono tracking-wider">
+                        <span>인시던트 풀러 가기</span> <i class="fa-solid fa-arrow-right text-[10px]"></i>
                     </a>
                 </div>
             </div>
         </div>
 
         <!-- 4 Metric Cards (Bento Style) -->
-        <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 font-mono">
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
             
             <!-- Metric 1: Solved -->
             <div class="bg-card rounded-2xl p-5 border border-borderline hover:border-slate-700 transition">
-                <div class="flex items-center justify-between text-slate-400 text-xs uppercase tracking-wider mb-2">
-                    <span>SOLVED</span>
+                <div class="flex items-center justify-between text-slate-400 text-xs font-semibold mb-2">
+                    <span>해결 완료</span>
                     <i class="fa-solid fa-circle-check text-emerald-400"></i>
                 </div>
-                <div class="text-2xl sm:text-3xl font-extrabold text-white">
-                    {{ "%02d" % stats.cleared_count }} <span class="text-xs text-slate-500 font-normal">/ 54</span>
+                <div class="text-2xl sm:text-3xl font-extrabold text-white font-mono">
+                    {{ "%02d" % stats.cleared_count }} <span class="text-xs text-slate-500 font-normal font-sans">/ 54개</span>
                 </div>
                 <div class="mt-2 w-full bg-slate-800 rounded-full h-1">
                     <div class="bg-emerald-400 h-1 rounded-full" style="width: {{ stats.clear_rate_percent }}%"></div>
@@ -134,11 +134,11 @@
 
             <!-- Metric 2: Completion Rate -->
             <div class="bg-card rounded-2xl p-5 border border-borderline hover:border-slate-700 transition">
-                <div class="flex items-center justify-between text-slate-400 text-xs uppercase tracking-wider mb-2">
-                    <span>PROGRESS</span>
+                <div class="flex items-center justify-between text-slate-400 text-xs font-semibold mb-2">
+                    <span>전체 진척률</span>
                     <i class="fa-solid fa-chart-line text-cyan-400"></i>
                 </div>
-                <div class="text-2xl sm:text-3xl font-extrabold text-cyan-400">
+                <div class="text-2xl sm:text-3xl font-extrabold text-cyan-400 font-mono">
                     {{ stats.clear_rate_percent }}%
                 </div>
                 <div class="mt-2 w-full bg-slate-800 rounded-full h-1">
@@ -148,29 +148,29 @@
 
             <!-- Metric 3: Score -->
             <div class="bg-card rounded-2xl p-5 border border-borderline hover:border-slate-700 transition">
-                <div class="flex items-center justify-between text-slate-400 text-xs uppercase tracking-wider mb-2">
-                    <span>TOTAL SCORE</span>
+                <div class="flex items-center justify-between text-slate-400 text-xs font-semibold mb-2">
+                    <span>누적 획득 점수</span>
                     <i class="fa-solid fa-bolt text-indigo-400"></i>
                 </div>
-                <div class="text-2xl sm:text-3xl font-extrabold text-white">
-                    {{ "{:,}".format(user.total_score) }} <span class="text-xs text-indigo-400 font-normal">PTS</span>
+                <div class="text-2xl sm:text-3xl font-extrabold text-white font-mono">
+                    {{ "{:,}".format(user.total_score) }} <span class="text-xs text-indigo-400 font-normal font-sans">점</span>
                 </div>
                 <div class="mt-2 text-[11px] text-slate-500">
-                    Calculated in real-time
+                    실시간 랭킹 산출
                 </div>
             </div>
 
             <!-- Metric 4: Rank -->
             <div class="bg-card rounded-2xl p-5 border border-borderline hover:border-slate-700 transition">
-                <div class="flex items-center justify-between text-slate-400 text-xs uppercase tracking-wider mb-2">
-                    <span>GLOBAL RANK</span>
+                <div class="flex items-center justify-between text-slate-400 text-xs font-semibold mb-2">
+                    <span>글로벌 순위</span>
                     <i class="fa-solid fa-trophy text-amber-400"></i>
                 </div>
-                <div class="text-2xl sm:text-3xl font-extrabold text-white">
-                    {% if user_rank %}#{{ "%02d" % user_rank }}{% else %}--{% endif %}
+                <div class="text-2xl sm:text-3xl font-extrabold text-white font-mono">
+                    {% if user_rank %}{{ user_rank }}위{% else %}미집계{% endif %}
                 </div>
                 <div class="mt-2 text-[11px] text-slate-500">
-                    Arena Leaderboard
+                    명예의 전당 기준
                 </div>
             </div>
 
@@ -182,11 +182,11 @@
             <!-- Left: 7 Domains Bento Matrix (7 Cols) -->
             <div class="lg:col-span-7 space-y-4">
                 <div class="flex items-center justify-between">
-                    <h2 class="text-xs font-mono uppercase tracking-wider text-slate-400 flex items-center gap-2">
-                        <i class="fa-solid fa-layer-group text-indigo-400"></i> DOMAIN PROGRESS (7 DOMAINS)
+                    <h2 class="text-xs font-semibold tracking-wider text-slate-400 flex items-center gap-2">
+                        <i class="fa-solid fa-layer-group text-indigo-400"></i> 7대 인프라 도메인별 진척 현황
                     </h2>
-                    <a href="/challenges" class="text-xs font-mono text-indigo-400 hover:text-indigo-300 transition flex items-center gap-1">
-                        VIEW ALL <i class="fa-solid fa-arrow-right text-[10px]"></i>
+                    <a href="/challenges" class="text-xs text-indigo-400 hover:text-indigo-300 transition flex items-center gap-1">
+                        전체 문제 보기 <i class="fa-solid fa-arrow-right text-[10px]"></i>
                     </a>
                 </div>
 
@@ -200,7 +200,7 @@
                                 </div>
                                 <div>
                                     <div class="font-bold text-white text-xs sm:text-sm">{{ d_info.name }}</div>
-                                    <div class="text-[10px] font-mono text-slate-500">{{ d_info.en_name }}</div>
+                                    <div class="text-[10px] font-mono text-slate-500">{{ d_info.en_name }} · {{ d_info.track_count }}개 트랙</div>
                                 </div>
                             </div>
                             <div class="text-right font-mono text-xs">
@@ -221,20 +221,20 @@
             <!-- Right: Real-time Leaderboard (5 Cols) -->
             <div class="lg:col-span-5 space-y-4">
                 <div class="flex items-center justify-between">
-                    <h2 class="text-xs font-mono uppercase tracking-wider text-slate-400 flex items-center gap-2">
-                        <i class="fa-solid fa-ranking-star text-amber-400"></i> LEADERBOARD (TOP 10)
+                    <h2 class="text-xs font-semibold tracking-wider text-slate-400 flex items-center gap-2">
+                        <i class="fa-solid fa-ranking-star text-amber-400"></i> 명예의 전당 (Top 10)
                     </h2>
-                    <span class="text-[10px] font-mono text-slate-500 uppercase">Live Sync</span>
+                    <span class="text-[10px] font-mono text-slate-500">실시간 동기화</span>
                 </div>
 
                 <div class="bg-card rounded-2xl border border-borderline overflow-hidden">
                     <table class="w-full text-left text-xs font-mono">
                         <thead class="bg-surface text-slate-400 uppercase text-[10px] tracking-wider border-b border-borderline">
                             <tr>
-                                <th class="py-3 px-4">RANK</th>
-                                <th class="py-3 px-3">ENGINEER</th>
-                                <th class="py-3 px-3 text-right">SCORE</th>
-                                <th class="py-3 px-4 text-center">SOLVED</th>
+                                <th class="py-3 px-4">순위</th>
+                                <th class="py-3 px-3">엔지니어</th>
+                                <th class="py-3 px-3 text-right">점수</th>
+                                <th class="py-3 px-4 text-center">해결</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-borderline">
@@ -246,7 +246,7 @@
                                 <td class="py-3 px-3 font-sans font-semibold text-white truncate max-w-[110px]">
                                     {{ rank_item.username }}
                                     {% if rank_item.username == user.username %}
-                                    <span class="text-[9px] font-mono px-1.5 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 ml-1">YOU</span>
+                                    <span class="text-[9px] font-mono px-1.5 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 ml-1">ME</span>
                                     {% endif %}
                                 </td>
                                 <td class="py-3 px-3 text-right font-bold text-indigo-400">{{ "{:,}".format(rank_item.total_score) }}</td>
@@ -269,19 +269,19 @@
                 <div class="w-10 h-10 rounded-xl bg-indigo-500/10 border border-indigo-500/30 flex items-center justify-center text-indigo-400 mb-2">
                     <i class="fa-solid fa-user-astronaut"></i>
                 </div>
-                <h2 class="text-xl font-bold text-white tracking-tight">ENGINEER REGISTRATION</h2>
-                <p class="text-xs text-slate-400 leading-relaxed">Enter your callsign to track incidents and rank on the global leaderboard.</p>
+                <h2 class="text-xl font-bold text-white tracking-tight">엔지니어 닉네임 등록</h2>
+                <p class="text-xs text-slate-400 leading-relaxed">ChaosQuest 아레나에서 랭킹과 풀이 기록을 저장할 호출명(닉네임)을 입력하세요.</p>
             </div>
 
             <div class="space-y-2">
-                <label class="block text-[11px] font-mono uppercase tracking-wider text-slate-400">CALLSIGN / NICKNAME</label>
-                <input id="login-input" type="text" placeholder="e.g. srekim, devops_lead" 
+                <label class="block text-[11px] font-mono uppercase tracking-wider text-slate-400">엔지니어 닉네임</label>
+                <input id="login-input" type="text" placeholder="예: srekim, devops_lead" 
                     onkeydown="if(event.key === 'Enter') submitLogin()"
                     class="w-full bg-surface border border-borderline rounded-xl px-4 py-3 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500 transition font-mono">
             </div>
 
-            <button onclick="submitLogin()" class="w-full py-3 bg-white hover:bg-slate-200 text-slate-900 font-bold rounded-xl text-xs font-mono tracking-wider uppercase transition flex items-center justify-center gap-2">
-                <span>ENTER ARENA</span> <i class="fa-solid fa-arrow-right text-[10px]"></i>
+            <button onclick="submitLogin()" class="w-full py-3 bg-white hover:bg-slate-200 text-slate-900 font-bold rounded-xl text-xs tracking-wider transition flex items-center justify-center gap-2">
+                <span>도전 시작하기</span> <i class="fa-solid fa-arrow-right text-[10px]"></i>
             </button>
         </div>
     </div>
@@ -299,7 +299,7 @@
             const input = document.getElementById('login-input');
             const username = input.value.trim();
             if (!username) {
-                alert("Please enter a valid nickname.");
+                alert("사용하실 닉네임을 입력해 주세요.");
                 return;
             }
 

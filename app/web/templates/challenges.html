@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Challenges Matrix - ChaosQuest</title>
+    <title>인시던트 챌린지 맵 - ChaosQuest</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script>
         tailwind.config = {
             darkMode: 'class',
@@ -50,12 +50,12 @@
                     </span>
                 </a>
                 
-                <nav class="hidden md:flex items-center space-x-1 text-xs font-mono uppercase tracking-wider">
+                <nav class="hidden md:flex items-center space-x-1 text-xs font-semibold">
                     <a href="/" class="px-3.5 py-1.5 rounded-full text-slate-400 hover:text-white hover:bg-white/5 transition flex items-center gap-2">
-                        DASHBOARD
+                        대시보드
                     </a>
                     <a href="/challenges" class="px-3.5 py-1.5 rounded-full bg-white/10 text-white font-bold border border-white/15 transition flex items-center gap-2">
-                        <span class="w-1.5 h-1.5 rounded-full bg-indigo-400"></span> CHALLENGES (54)
+                        <span class="w-1.5 h-1.5 rounded-full bg-indigo-400"></span> 인시던트 챌린지 (54)
                     </a>
                 </nav>
             </div>
@@ -64,9 +64,9 @@
             <div class="flex items-center space-x-3">
                 <div class="flex items-center space-x-2.5 bg-card/80 px-3 py-1.5 rounded-full border border-borderline text-xs font-mono">
                     <i class="fa-solid fa-user text-indigo-400"></i>
-                    <span class="font-bold text-white tracking-wide" id="user-display">{{ user.username }}</span>
+                    <span class="font-bold text-white tracking-wide font-sans" id="user-display">{{ user.username }}</span>
                     <span class="text-indigo-400 font-bold bg-indigo-950/60 px-2 py-0.5 rounded-full border border-indigo-800/40">
-                        {{ user.total_score }} PTS
+                        {{ user.total_score }} 점
                     </span>
                 </div>
             </div>
@@ -79,21 +79,21 @@
         <!-- Header Toolbar -->
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-card rounded-2xl p-6 border border-borderline">
             <div class="space-y-1">
-                <div class="text-[11px] font-mono uppercase tracking-wider text-indigo-400">INCIDENT CURRICULUM</div>
+                <div class="text-[11px] font-mono uppercase tracking-wider text-indigo-400 font-bold">인시던트 커리큘럼 맵</div>
                 <h1 class="text-xl font-bold text-white tracking-tight">
-                    7 Domains · 18 Incident Tracks · 54 Production Scenarios
+                    7대 인프라 도메인 · 18대 장애 트랙 · 54개 실무 시나리오
                 </h1>
                 <p class="text-xs text-slate-400">
-                    Select a domain to inspect sub-tracks and launch isolated sandboxes by difficulty level.
+                    도메인을 클릭하여 하위 트랙과 난이도별(초급/중급/고급) 문제를 확인하고 샌드박스를 시작하세요.
                 </p>
             </div>
 
-            <div class="flex items-center gap-2 shrink-0 font-mono text-xs">
-                <button onclick="expandAllDomains()" class="bg-surface hover:bg-cardhover text-slate-300 px-4 py-2 rounded-full border border-borderline transition flex items-center gap-2">
-                    <i class="fa-solid fa-angles-down text-[10px]"></i> EXPAND ALL
+            <div class="flex items-center gap-2 shrink-0 text-xs">
+                <button onclick="expandAllDomains()" class="bg-surface hover:bg-cardhover text-slate-300 px-4 py-2 rounded-full border border-borderline transition flex items-center gap-2 font-semibold">
+                    <i class="fa-solid fa-angles-down text-[10px]"></i> 전체 펼치기
                 </button>
-                <button onclick="collapseAllDomains()" class="bg-surface hover:bg-cardhover text-slate-300 px-4 py-2 rounded-full border border-borderline transition flex items-center gap-2">
-                    <i class="fa-solid fa-angles-up text-[10px]"></i> COLLAPSE ALL
+                <button onclick="collapseAllDomains()" class="bg-surface hover:bg-cardhover text-slate-300 px-4 py-2 rounded-full border border-borderline transition flex items-center gap-2 font-semibold">
+                    <i class="fa-solid fa-angles-up text-[10px]"></i> 전체 접기
                 </button>
             </div>
         </div>
@@ -110,16 +110,16 @@
                             <i class="{{ domain_icons.get(d_id, 'fa-solid fa-server') }}"></i>
                         </div>
                         <div>
-                            <div class="flex items-center gap-2 font-mono">
-                                <span class="text-[10px] tracking-wider font-bold px-2 py-0.5 rounded-full bg-white/5 border border-white/10 text-indigo-400">
+                            <div class="flex items-center gap-2">
+                                <span class="text-[10px] tracking-wider font-bold px-2 py-0.5 rounded-full bg-white/5 border border-white/10 text-indigo-400 font-mono">
                                     DOM-0{{ d_id }}
                                 </span>
-                                <h2 class="text-sm sm:text-base font-bold text-white font-sans">
+                                <h2 class="text-sm sm:text-base font-bold text-white">
                                     {{ domain.name.replace("💾", "").replace("⚙️", "").replace("🌐", "").replace("🚀", "").replace("🐳", "").replace("🗄️", "").replace("☁️", "").strip() }}
                                 </h2>
                             </div>
                             <div class="text-[11px] font-mono text-slate-500 mt-0.5">
-                                {{ domain_en_names.get(d_id, "Infrastructure") }} · {{ domain.tracks|length }} Tracks
+                                {{ domain_en_names.get(d_id, "Infrastructure") }} · {{ domain.tracks|length }}개 트랙 (총 {{ domain.tracks.values()|map(attribute='stages')|map('length')|sum }}개 문제)
                             </div>
                         </div>
                     </div>
@@ -133,13 +133,13 @@
                 <div id="domain-{{ d_id }}" class="{% if not loop.first %}hidden{% endif %} p-5 border-t border-borderline bg-void/50">
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                         {% for t_id, track in domain.tracks.items() %}
-                        <div class="bg-card rounded-xl p-4 border border-borderline hover:border-slate-700 flex flex-col justify-between space-y-3 font-mono">
+                        <div class="bg-card rounded-xl p-4 border border-borderline hover:border-slate-700 flex flex-col justify-between space-y-3">
                             <div>
-                                <div class="flex items-center justify-between text-[11px] mb-1.5">
+                                <div class="flex items-center justify-between text-[11px] mb-1.5 font-mono">
                                     <span class="text-indigo-400 font-bold">TRK-{{ t_id }}</span>
-                                    <span class="text-slate-500">{{ track.stages|length }} Levels</span>
+                                    <span class="text-slate-500">{{ track.stages|length }}개 난이도</span>
                                 </div>
-                                <h3 class="font-sans font-bold text-white text-xs line-clamp-1" title="{{ track.title }}">
+                                <h3 class="font-bold text-white text-xs line-clamp-1" title="{{ track.title }}">
                                     {{ track.title }}
                                 </h3>
                             </div>
@@ -150,23 +150,23 @@
                                 <div class="flex items-center justify-between py-1.5 px-2.5 rounded-lg bg-surface/70 hover:bg-surface transition">
                                     <div class="flex items-center space-x-2">
                                         {% if st.id in cleared_ids %}
-                                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 inline-block" title="Cleared"></span>
+                                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 inline-block" title="해결 완료"></span>
                                         {% else %}
-                                        <span class="w-1.5 h-1.5 rounded-full bg-slate-600 inline-block" title="Pending"></span>
+                                        <span class="w-1.5 h-1.5 rounded-full bg-slate-600 inline-block" title="미해결"></span>
                                         {% endif %}
 
                                         {% if st.difficulty == "Easy" %}
-                                        <span class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">EASY</span>
+                                        <span class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-mono">초급</span>
                                         {% elif st.difficulty == "Medium" %}
-                                        <span class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-amber-500/10 text-amber-400 border border-amber-500/20">MED</span>
+                                        <span class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-amber-500/10 text-amber-400 border border-amber-500/20 font-mono">중급</span>
                                         {% else %}
-                                        <span class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-rose-500/10 text-rose-400 border border-rose-500/20">HARD</span>
+                                        <span class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-rose-500/10 text-rose-400 border border-rose-500/20 font-mono">고급</span>
                                         {% endif %}
 
-                                        <span class="font-sans text-slate-300 text-[11px] truncate max-w-[100px] sm:max-w-[120px]" title="{{ st.title }}">{{ st.title }}</span>
+                                        <span class="text-slate-300 text-[11px] truncate max-w-[100px] sm:max-w-[120px]" title="{{ st.title }}">{{ st.title }}</span>
                                     </div>
-                                    <a href="/play/{{ st.id }}" class="bg-white hover:bg-slate-200 text-slate-900 font-bold px-2.5 py-1 rounded-md transition text-[10px] uppercase tracking-wider flex items-center gap-1">
-                                        LAUNCH <i class="fa-solid fa-arrow-right text-[8px]"></i>
+                                    <a href="/play/{{ st.id }}" class="bg-white hover:bg-slate-200 text-slate-900 font-bold px-2.5 py-1 rounded-md transition text-[10px] flex items-center gap-1">
+                                        <span>도전</span> <i class="fa-solid fa-arrow-right text-[8px]"></i>
                                     </a>
                                 </div>
                                 {% endfor %}
