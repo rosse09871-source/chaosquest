@@ -1,5 +1,6 @@
+import hashlib
 from datetime import datetime, timezone
-from typing import Optional, List, Dict, Any
+from typing import Optional, List, Dict, Any, Tuple
 from sqlalchemy.orm import Session
 from sqlalchemy import func, desc, asc
 from app.database.models import User, Stage, StageAttempt
@@ -9,8 +10,45 @@ def utc_now() -> datetime:
     return datetime.now(timezone.utc)
 
 
+def hash_password(password: str) -> str:
+    return hashlib.sha256(password.encode("utf-8")).hexdigest()
+
+
+def authenticate_or_create_user(
+    db: Session, username: str, password: Optional[str] = None
+) -> Tuple[Optional[User], Optional[str]]:
+    """
+    Authenticates an existing user with password or registers a new user with password.
+    Returns (user, None) on success, or (None, error_message) on failure.
+    """
+    clean_username = username.strip()
+    user = db.query(User).filter(User.username == clean_username).first()
+    pwd = password.strip() if password else ""
+
+    if not user:
+        # Register new user
+        pwd_hash = hash_password(pwd) if pwd else None
+        is_admin_user = clean_username.lower() in ["daisy", "admin", "sre_senior_kim"]
+        user = User(username=clean_username, password_hash=pwd_hash, is_admin=is_admin_user)
+        db.add(user)
+        db.flush()
+        return user, None
+
+    # Existing user
+    if user.password_hash:
+        if not pwd or hash_password(pwd) != user.password_hash:
+            return None, "비밀번호가 올바르지 않습니다."
+    else:
+        # Legacy user without password setting password on login
+        if pwd:
+            user.password_hash = hash_password(pwd)
+
+    user.last_active_at = utc_now()
+    return user, None
+
+
 def get_or_create_user(db: Session, username: str) -> User:
-    """Finds an existing user by username or creates a new one."""
+    """Finds an existing user by username or creates a new one (internal)."""
     clean_username = username.strip()
     user = db.query(User).filter(User.username == clean_username).first()
     is_admin_user = clean_username.lower() in ["daisy", "admin", "sre_senior_kim"]

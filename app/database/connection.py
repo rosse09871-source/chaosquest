@@ -30,6 +30,11 @@ def init_db():
             conn.commit()
         except Exception:
             pass
+        try:
+            conn.execute(text("ALTER TABLE users ADD COLUMN password_hash VARCHAR(128)"))
+            conn.commit()
+        except Exception:
+            pass
 
 
 @contextmanager

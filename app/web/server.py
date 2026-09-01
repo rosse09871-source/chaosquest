@@ -320,7 +320,7 @@ def post_detail_page(
 # -------------------------------------------------------------
 class LoginRequest(BaseModel):
     username: str
-    admin_password: Optional[str] = None
+    password: Optional[str] = None
 
 
 class CreatePostRequest(BaseModel):
@@ -405,6 +405,7 @@ def api_delete_comment(comment_id: int, user: dict = Depends(get_current_user_ob
 @app.post("/api/user/login")
 def api_login(data: LoginRequest):
     uname = data.username.strip()
+    pwd = (data.password or "").strip()
     if not uname:
         raise HTTPException(status_code=400, detail="사용자 닉네임을 입력해 주세요.")
 
@@ -412,18 +413,22 @@ def api_login(data: LoginRequest):
     admin_authed = False
 
     if is_admin_candidate:
-        if not data.admin_password or data.admin_password != ADMIN_PASSWORD:
+        if not pwd or pwd != ADMIN_PASSWORD:
             raise HTTPException(
-                status_code=401,
-                detail="관리자 예약어 닉네임입니다. 올바른 관리자 비밀번호를 입력해 주세요."
+                status_code=400,
+                detail="비밀번호가 올바르지 않습니다."
             )
         admin_authed = True
 
     with get_db_session() as db:
-        user = crud.get_or_create_user(db, uname)
-        if admin_authed:
+        if is_admin_candidate:
+            user = crud.get_or_create_user(db, uname)
             user.is_admin = True
             db.commit()
+        else:
+            user, err_msg = crud.authenticate_or_create_user(db, uname, pwd)
+            if err_msg:
+                raise HTTPException(status_code=400, detail=err_msg)
 
         resp = JSONResponse({
             "status": "success",

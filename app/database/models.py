@@ -13,6 +13,7 @@ class User(Base):
 
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     username = Column(String(64), unique=True, index=True, nullable=False)
+    password_hash = Column(String(128), nullable=True)
     is_admin = Column(Boolean, default=False, nullable=False)
     total_score = Column(Integer, default=0, nullable=False)
     created_at = Column(DateTime, default=utc_now, nullable=False)

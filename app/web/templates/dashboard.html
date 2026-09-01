@@ -289,32 +289,28 @@
                 <div class="w-10 h-10 rounded-xl bg-indigo-500/10 border border-indigo-500/30 flex items-center justify-center text-indigo-400 mb-2">
                     <i class="fa-solid fa-user-astronaut"></i>
                 </div>
-                <h2 class="text-xl font-bold text-white tracking-tight">엔지니어 닉네임 설정</h2>
-                <p class="text-xs text-slate-400 leading-relaxed">ChaosQuest 아레나에서 랭킹과 풀이 기록을 저장할 호출명(닉네임)을 입력하세요.</p>
+                <h2 class="text-xl font-bold text-white tracking-tight">엔지니어 로그인 / 등록</h2>
+                <p class="text-xs text-slate-400 leading-relaxed">ChaosQuest 아레나에서 랭킹과 풀이 기록을 저장할 닉네임과 비밀번호를 입력하세요. (첫 입력 시 자동 등록됩니다)</p>
             </div>
 
             <div class="space-y-3">
                 <div class="space-y-1">
                     <label class="block text-[11px] font-mono uppercase tracking-wider text-slate-400">엔지니어 닉네임</label>
                     <input id="login-input" type="text" placeholder="예: srekim, devops_lead" 
-                        oninput="checkAdminName(this.value)"
-                        onkeydown="if(event.key === 'Enter') submitLogin()"
+                        onkeydown="if(event.key === 'Enter') document.getElementById('login-password').focus()"
                         class="w-full bg-surface border border-borderline rounded-xl px-4 py-3 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500 transition font-mono">
                 </div>
                 
-                <div id="admin-password-box" class="space-y-1 hidden">
-                    <label class="block text-[11px] font-mono uppercase tracking-wider text-purple-400 font-bold flex items-center justify-between">
-                        <span>관리자 비밀번호</span>
-                        <i class="fa-solid fa-lock text-[10px]"></i>
-                    </label>
-                    <input id="login-admin-pass" type="password" placeholder="관리자 암호를 입력하세요" 
+                <div class="space-y-1">
+                    <label class="block text-[11px] font-mono uppercase tracking-wider text-slate-400">비밀번호</label>
+                    <input id="login-password" type="password" placeholder="비밀번호를 입력하세요" 
                         onkeydown="if(event.key === 'Enter') submitLogin()"
-                        class="w-full bg-surface border border-purple-500/40 rounded-xl px-4 py-3 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-purple-500 transition font-mono">
+                        class="w-full bg-surface border border-borderline rounded-xl px-4 py-3 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500 transition font-mono">
                 </div>
             </div>
 
             <button id="btn-submit-login" onclick="submitLogin()" class="w-full py-3 bg-white hover:bg-slate-200 text-slate-900 font-bold rounded-xl text-xs tracking-wider transition flex items-center justify-center gap-2">
-                <span>확인 및 입장</span> <i class="fa-solid fa-arrow-right text-[10px]"></i>
+                <span>입장하기</span> <i class="fa-solid fa-arrow-right text-[10px]"></i>
             </button>
         </div>
     </div>
@@ -463,8 +459,9 @@
         function openLoginModal() {
             document.getElementById('login-modal').classList.remove('hidden');
             const input = document.getElementById('login-input');
+            const pass = document.getElementById('login-password');
             input.value = document.getElementById('user-display').innerText.trim() === 'Guest_Engineer' ? '' : document.getElementById('user-display').innerText.trim();
-            checkAdminName(input.value);
+            if (pass) pass.value = '';
             setTimeout(() => input.focus(), 100);
         }
 
@@ -474,21 +471,21 @@
 
         async function submitLogin() {
             const input = document.getElementById('login-input');
+            const passInput = document.getElementById('login-password');
             const username = input.value.trim();
+            const password = passInput ? passInput.value.trim() : '';
+
             if (!username) {
                 alert("사용하실 닉네임을 입력해 주세요.");
                 return;
             }
-
-            const passInput = document.getElementById('login-admin-pass');
-            const adminPassword = passInput ? passInput.value.trim() : null;
 
             const res = await fetch('/api/user/login', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ 
                     username: username,
-                    admin_password: adminPassword || null
+                    password: password || null
                 })
             });
 
@@ -497,11 +494,8 @@
                 window.location.reload();
             } else {
                 const data = await res.json();
-                alert(data.detail || "로그인 처리에 실패했습니다.");
-                if (['daisy', 'admin', 'root', 'sre_senior_kim'].includes(username.toLowerCase())) {
-                    document.getElementById('admin-password-box')?.classList.remove('hidden');
-                    passInput?.focus();
-                }
+                alert(data.detail || "비밀번호가 올바르지 않습니다.");
+                passInput?.focus();
             }
         }
 

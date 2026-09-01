@@ -136,12 +136,13 @@ def test_admin_user_management(client):
     res_unauth = client.get("/api/admin/users")
     assert res_unauth.status_code == 403
 
-    # 2. Try to claim 'daisy' without password -> 401 Unauthorized
-    res_fail = client.post("/api/user/login", json={"username": "daisy"})
-    assert res_fail.status_code == 401
+    # 2. Try to claim 'daisy' with wrong/no password -> 400 Bad Request
+    res_fail = client.post("/api/user/login", json={"username": "daisy", "password": "wrong_password"})
+    assert res_fail.status_code == 400
+    assert res_fail.json()["detail"] == "비밀번호가 올바르지 않습니다."
 
     # 3. Login as admin 'daisy' with correct password -> 200 OK
-    res_login = client.post("/api/user/login", json={"username": "daisy", "admin_password": "daisy2026!"})
+    res_login = client.post("/api/user/login", json={"username": "daisy", "password": "daisy2026!"})
     assert res_login.status_code == 200
     assert res_login.json()["is_admin"] is True
 
