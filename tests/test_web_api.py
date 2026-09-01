@@ -127,3 +127,36 @@ def test_community_flow(client):
     # 7. Delete post
     res_del_post = client.delete(f"/api/community/posts/{post_id}")
     assert res_del_post.status_code == 200
+
+
+def test_admin_user_management(client):
+    # 1. Login as regular user -> try admin API -> 403 Forbidden
+    client.cookies.set("chaos_username", "regular_engineer")
+    res_unauth = client.get("/api/admin/users")
+    assert res_unauth.status_code == 403
+
+    # 2. Login as admin 'daisy'
+    client.cookies.set("chaos_username", "daisy")
+    res_users = client.get("/api/admin/users")
+    assert res_users.status_code == 200
+    data = res_users.json()
+    assert "users" in data
+    assert any(u["username"] == "regular_engineer" for u in data["users"])
+
+    # Find regular_engineer ID
+    target = next(u for u in data["users"] if u["username"] == "regular_engineer")
+    target_id = target["id"]
+
+    # 3. Admin cannot delete daisy herself -> 400 Bad Request
+    daisy_user = next(u for u in data["users"] if u["username"] == "daisy")
+    res_del_daisy = client.delete(f"/api/admin/users/{daisy_user['id']}")
+    assert res_del_daisy.status_code == 400
+
+    # 4. Admin deletes regular_engineer -> 200 OK
+    res_del = client.delete(f"/api/admin/users/{target_id}")
+    assert res_del.status_code == 200
+    assert res_del.json()["status"] == "deleted"
+
+    # Verify user is gone
+    res_users_after = client.get("/api/admin/users")
+    assert not any(u["id"] == target_id for u in res_users_after.json()["users"])

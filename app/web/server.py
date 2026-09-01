@@ -424,6 +424,36 @@ def api_get_leaderboard():
         return {"leaderboard": crud.get_global_leaderboard(db, limit=20)}
 
 
+# -------------------------------------------------------------
+# Admin Moderation APIs
+# -------------------------------------------------------------
+@app.get("/api/admin/users")
+def api_admin_get_users(user: dict = Depends(get_current_user_obj)):
+    if not user.get("is_admin"):
+        raise HTTPException(status_code=403, detail="관리자(Admin) 권한이 필요합니다.")
+    with get_db_session() as db:
+        users = crud.get_all_users_with_stats(db)
+        return {"users": users}
+
+
+@app.delete("/api/admin/users/{user_id}")
+def api_admin_delete_user(user_id: int, user: dict = Depends(get_current_user_obj)):
+    if not user.get("is_admin"):
+        raise HTTPException(status_code=403, detail="관리자(Admin) 권한이 필요합니다.")
+    
+    with get_db_session() as db:
+        target = db.query(models.User).filter(models.User.id == user_id).first()
+        if not target:
+            raise HTTPException(status_code=404, detail="사용자를 찾을 수 없습니다.")
+        if target.username.lower() == "daisy" or target.id == user["id"]:
+            raise HTTPException(status_code=400, detail="최고 관리자(daisy) 계정은 삭제할 수 없습니다.")
+        
+        success = crud.delete_user(db, user_id)
+        if not success:
+            raise HTTPException(status_code=500, detail="유저 삭제 중 오류가 발생했습니다.")
+        return {"status": "deleted", "message": f"'{target.username}' 사용자가 안전하게 삭제되었습니다."}
+
+
 class StageActionRequest(BaseModel):
     session_id: str
 

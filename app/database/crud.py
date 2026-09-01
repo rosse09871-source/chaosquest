@@ -499,4 +499,59 @@ def seed_initial_community_posts(db: Session):
         user_id=admin.id,
         content="맞습니다! `ls -la /var/run/app.sock`로 소유자와 권한(0660 또는 0666)을 확인하고, `chmod 666 /var/run/app.sock` 또는 `chown www-data:www-data`로 Nginx 워커 프로세스가 소켓에 접근할 수 있도록 열어주면 즉시 해결됩니다.",
     )
+
+
+# -------------------------------------------------------------
+# Admin User Management
+# -------------------------------------------------------------
+def get_all_users_with_stats(db: Session) -> List[Dict[str, Any]]:
+    """Returns full user list with cleared stage counts for admin moderation."""
+    users = db.query(User).order_by(User.total_score.desc(), User.id.asc()).all()
+    results = []
+    for u in users:
+        cleared_count = (
+            db.query(func.count(func.distinct(StageAttempt.stage_id)))
+            .filter(StageAttempt.user_id == u.id, StageAttempt.status == "CLEARED")
+            .scalar()
+            or 0
+        )
+        results.append(
+            {
+                "id": u.id,
+                "username": u.username,
+                "total_score": u.total_score,
+                "is_admin": bool(u.is_admin or u.username.lower() == "daisy"),
+                "cleared_count": cleared_count,
+                "created_at": u.created_at.strftime("%Y-%m-%d %H:%M") if u.created_at else "N/A",
+                "last_active_at": u.last_active_at.strftime("%Y-%m-%d %H:%M") if u.last_active_at else "N/A",
+            }
+        )
+    return results
+
+
+def delete_user(db: Session, user_id: int) -> bool:
+    """Deletes a user and all cascaded attempts, posts, comments, and likes."""
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        return False
+
+    # 1. Delete user's post likes
+    db.query(PostLike).filter(PostLike.user_id == user_id).delete(synchronize_session=False)
+
+    # 2. Delete user's comments
+    db.query(Comment).filter(Comment.user_id == user_id).delete(synchronize_session=False)
+
+    # 3. Delete user's posts (and associated comments & likes)
+    user_posts = db.query(Post).filter(Post.user_id == user_id).all()
+    for p in user_posts:
+        db.query(Comment).filter(Comment.post_id == p.id).delete(synchronize_session=False)
+        db.query(PostLike).filter(PostLike.post_id == p.id).delete(synchronize_session=False)
+        db.delete(p)
+
+    # 4. Delete user's stage attempts
+    db.query(StageAttempt).filter(StageAttempt.user_id == user_id).delete(synchronize_session=False)
+
+    # 5. Delete the user
+    db.delete(user)
     db.commit()
+    return True
