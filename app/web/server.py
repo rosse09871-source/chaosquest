@@ -65,8 +65,8 @@ def get_current_user_obj(username: str = Depends(get_current_user_name)):
 # HTML Page Routes
 # -------------------------------------------------------------
 @app.get("/", response_class=HTMLResponse)
-def index_page(request: Request, user: dict = Depends(get_current_user_obj)):
-    """Main Catalog & Domain Explorer Page."""
+def dashboard_page(request: Request, user: dict = Depends(get_current_user_obj)):
+    """Main Executive SRE Dashboard Page."""
     catalog = get_domain_catalog()
     with get_db_session() as db:
         stats = crud.get_user_progress_summary(db, user["id"])
@@ -75,15 +75,64 @@ def index_page(request: Request, user: dict = Depends(get_current_user_obj)):
 
     cleared_ids = set(stats.get("cleared_stage_ids", []))
 
+    # Calculate domain-by-domain summaries
+    domain_summaries = []
+    for d_id, domain in sorted(catalog.items()):
+        total_stages = sum(len(t["stages"]) for t in domain["tracks"].values())
+        cleared_in_dom = sum(
+            1 for t in domain["tracks"].values() for s in t["stages"] if s.id in cleared_ids
+        )
+        pct = int((cleared_in_dom / total_stages) * 100) if total_stages > 0 else 0
+        domain_summaries.append(
+            {
+                "id": d_id,
+                "name": domain["name"],
+                "icon": domain["name"].split(" ")[0],
+                "track_count": len(domain["tracks"]),
+                "total_stages": total_stages,
+                "cleared_count": cleared_in_dom,
+                "percent": pct,
+            }
+        )
+
+    # Find user rank in leaderboard
+    user_rank = None
+    for r in leaderboard:
+        if r["username"] == user["username"]:
+            user_rank = r["rank"]
+            break
+
     return templates.TemplateResponse(
         request=request,
-        name="index.html",
+        name="dashboard.html",
+        context={
+            "user": user,
+            "stats": stats,
+            "domain_summaries": domain_summaries,
+            "leaderboard": leaderboard,
+            "user_rank": user_rank,
+            "docker_available": orchestrator.is_docker_available,
+        },
+    )
+
+
+@app.get("/challenges", response_class=HTMLResponse)
+def challenges_page(request: Request, user: dict = Depends(get_current_user_obj)):
+    """Dedicated 7 Domains 18 Tracks 54 Problems Matrix Explorer."""
+    catalog = get_domain_catalog()
+    with get_db_session() as db:
+        stats = crud.get_user_progress_summary(db, user["id"])
+
+    cleared_ids = set(stats.get("cleared_stage_ids", []))
+
+    return templates.TemplateResponse(
+        request=request,
+        name="challenges.html",
         context={
             "user": user,
             "stats": stats,
             "catalog": catalog,
             "cleared_ids": cleared_ids,
-            "leaderboard": leaderboard,
             "docker_available": orchestrator.is_docker_available,
         },
     )
