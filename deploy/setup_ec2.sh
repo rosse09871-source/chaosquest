@@ -4,7 +4,17 @@
 # ==========================================
 set -e
 
-echo "🚀 [1/4] Updating package index..."
+echo "🚀 [1/5] Setting up 2GB Swap memory for AWS Free Tier (t2.micro 1GB RAM)..."
+if [ ! -f /swapfile ]; then
+    sudo fallocate -l 2G /swapfile || sudo dd if=/dev/zero of=/swapfile bs=1M count=2048
+    sudo chmod 600 /swapfile
+    sudo mkswap /swapfile
+    sudo swapon /swapfile
+    echo '/swapfile none swap sw 0 0' | sudo tee -a /etc/fstab
+    echo "✅ 2GB Swap successfully activated!"
+fi
+
+echo "🚀 [2/5] Updating package index..."
 sudo apt-get update -qq
 sudo apt-get install -y -qq git curl ca-certificates gnupg python3 python3-pip python3-venv
 
