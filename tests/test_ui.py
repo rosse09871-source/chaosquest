@@ -14,8 +14,8 @@ def test_ui_render_components():
 
     # Test ticket rendering
     challenges = load_all_challenge_metadata()
-    assert "101" in challenges
-    ch101 = challenges["101"]
+    assert "101-1" in challenges
+    ch101 = challenges["101-1"]
 
     render_incident_ticket(ch101)
     render_post_mortem(ch101, solve_time_str="05m 20s", score=480)

@@ -1,0 +1,35 @@
+id: "702-1"
+domain_id: 7
+domain: "☁️ AWS 클라우드 & 인프라 보안"
+track_id: "702"
+track: "Track 702: AWS CLI 자격증명 & 리전 설정 오류"
+title: "AWS CLI 호출 실패: The config profile could not be found"
+category: "Security"
+difficulty: "Medium"
+base_score: 550
+target_time_seconds: 600
+
+incident:
+  reporter: "Cloud Infrastructure Team"
+  severity: "P1-CRITICAL"
+  symptom: "배포 스크립트(/usr/local/bin/deploy_s3.sh)가 S3로 아티팩트를 업로드하려 할 때 'botocore.exceptions.ProfileNotFound: The config profile could not be found' 에러가 발생합니다."
+  objective: "~/.aws/credentials 와 ~/.aws/config 파일의 [default] 프로필 오타를 수정하고 기본 리전을 ap-northeast-2(서울)로 설정하세요."
+
+hints:
+  - level: 1
+    cost: 50
+    text: "cat ~/.aws/credentials 및 cat ~/.aws/config 파일을 점검하세요."
+  - level: 2
+    cost: 50
+    text: "[defualt] 로 프로필 이름에 오타가 있거나 region 설정이 누락되어 있습니다."
+  - level: 3
+    cost: 50
+    text: "[default] 로 수정하고 region = ap-northeast-2 를 ~/.aws/config 에 등록한 후 /usr/local/bin/deploy_s3.sh 를 실행하세요."
+
+post_mortem:
+  root_cause: "AWS CLI 설정 파일의 프로필 섹션 이름 오타로 인해 Boto3 SDK 및 AWS CLI가 자격증명을 불러오지 못했습니다."
+  key_commands:
+    - "aws configure list (현재 적용된 AWS 자격증명 및 리전 확인)"
+    - "cat ~/.aws/credentials"
+    - "cat ~/.aws/config"
+  real_world_lesson: "AWS CLI와 SDK 기반 인프라 자동화에서 프로필 오타 및 리전 누락은 배포 중단의 주요 원인입니다."

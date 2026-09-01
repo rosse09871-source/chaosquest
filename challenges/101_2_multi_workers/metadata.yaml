@@ -1,0 +1,34 @@
+id: "101-2"
+domain_id: 1
+domain: "💾 파일시스템 & 스토리지"
+track_id: "101"
+track: "Track 101: 유령 파일 & 파일 디스크립터 누수"
+title: "멀티 워커 프로세스가 공유하는 숨겨진 유령 파일 정리"
+category: "Filesystem"
+difficulty: "Medium"
+base_score: 550
+target_time_seconds: 600
+
+incident:
+  reporter: "Data Platform Team"
+  severity: "P1-CRITICAL"
+  symptom: "데이터 수집 워커들이 /tmp/.shared_dump.dat 대용량 파일을 동시에 열고 있으며, 1개 프로세스를 종료해도 다른 워커들이 파일을 계속 물고 있어 디스크가 반환되지 않습니다."
+  objective: "동일한 삭제 파일을 열고 있는 모든 멀티 워커 프로세스들을 식별하여 일괄 종료하고 디스크 공간을 확보하세요."
+
+hints:
+  - level: 1
+    cost: 50
+    text: "lsof +L1 명령어로 /tmp/.shared_dump.dat 파일을 열고 있는 모든 PID 목록을 확인하세요."
+  - level: 2
+    cost: 50
+    text: "워커들이 dump_worker.py 라는 이름으로 여러 개(3개 이상) 실행 중입니다. ps -ef | grep dump_worker 로 모든 자식 프로세스를 확인하세요."
+  - level: 3
+    cost: 50
+    text: "pkill -9 -f dump_worker 또는 killall python3 로 모든 워커 프로세스를 한 번에 종료하세요."
+
+post_mortem:
+  root_cause: "멀티프로세싱(Multiprocessing/Gunicorn/Celery) 환경에서 부모 프로세스가 연 파일을 자식 워커들이 파일 디스크립터를 상속받아 공유하면서 모든 자식이 종료되기 전까지 디스크가 해제되지 않았습니다."
+  key_commands:
+    - "lsof +L1 (삭제된 파일을 공유 중인 모든 PID 추적)"
+    - "pkill -9 -f <프로세스패턴> (관련 프로세스 그룹 일괄 강제 사살)"
+  real_world_lesson: "실무에서 Gunicorn이나 Celery 워커 재시작 시 일부 좀비 워커가 남아있으면 로그 파일이 영원히 삭제되지 않는 대표적인 원인입니다."

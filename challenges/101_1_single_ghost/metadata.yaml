@@ -1,0 +1,35 @@
+id: "101-1"
+domain_id: 1
+domain: "💾 파일시스템 & 스토리지"
+track_id: "101"
+track: "Track 101: 유령 파일 & 파일 디스크립터 누수"
+title: "단일 데몬의 삭제된 로그 파일 디스크립터 회수"
+category: "Filesystem"
+difficulty: "Easy"
+base_score: 500
+target_time_seconds: 600
+
+incident:
+  reporter: "Cloud Watchdog Bot"
+  severity: "P1-CRITICAL"
+  symptom: "서버의 디스크 사용량이 100%에 도달하여 신규 로그 저장이 실패하고 있습니다. 하지만 du로 디렉토리를 뒤져봐도 큰 파일이 보이지 않습니다."
+  objective: "삭제되었으나 단일 프로세스가 물고 있는 유령 파일을 찾아 프로세스를 종료하고 디스크 공간을 정상 상태로 복구하세요."
+
+hints:
+  - level: 1
+    cost: 50
+    text: "du -sh 로 보이는 파일 용량과 df -h 로 보이는 실제 파티션 사용량이 다를 수 있습니다. lsof +L1 명령어로 삭제되었으나 열려있는 파일을 확인하세요."
+  - level: 2
+    cost: 50
+    text: "lsof +L1 출력에서 (deleted) 표시된 /var/log/app_ghost.log 파일을 열고 있는 PID를 확인하세요."
+  - level: 3
+    cost: 50
+    text: "kill -9 <PID> 명령어로 해당 프로세스를 종료하세요."
+
+post_mortem:
+  root_cause: "리눅스는 파일을 rm 명령어로 삭제해도, 특정 프로세스가 해당 파일 디스크립터를 열고 있으면 디스크 공간을 해제하지 않습니다."
+  key_commands:
+    - "df -h (전체 파티션 사용량 확인)"
+    - "lsof +L1 또는 lsof | grep deleted (삭제되었으나 열려있는 파일 추적)"
+    - "kill -9 <PID> (파일을 물고 있는 프로세스 강제 종료)"
+  real_world_lesson: "실무에서 logrotate 설정 시 copytruncate 옵션을 누락하거나 데몬 재시작을 빼먹었을 때 가장 흔하게 발생하는 대표적인 장애입니다."

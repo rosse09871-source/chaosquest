@@ -1,0 +1,35 @@
+id: "501-1"
+domain_id: 5
+domain: "🐳 도커 & 컨테이너 런타임"
+track_id: "501"
+track: "Track 501: 도커 소켓 권한 & 데몬 통신 장애"
+title: "도커 소켓 권한 거부: docker.sock Permission Denied"
+category: "Docker"
+difficulty: "Easy"
+base_score: 500
+target_time_seconds: 600
+
+incident:
+  reporter: "CI/CD Pipeline Bot"
+  severity: "P1-CRITICAL"
+  symptom: "jenkins/appuser 유저로 빌드 스크립트를 실행할 때 'Got permission denied while trying to connect to the Docker daemon socket' 에러가 발생합니다."
+  objective: "/var/run/docker.sock 파일의 그룹 소유권을 docker 그룹으로 수정하거나 appuser 유저를 docker 그룹에 추가하여 도커 명령어가 정상 실행되도록 조치하세요."
+
+hints:
+  - level: 1
+    cost: 50
+    text: "ls -la /var/run/docker.sock 로 도커 유닉스 소켓의 권한과 그룹을 확인하세요."
+  - level: 2
+    cost: 50
+    text: "chmod 660 /var/run/docker.sock 및 chown root:docker /var/run/docker.sock 명령어를 확인하세요."
+  - level: 3
+    cost: 50
+    text: "chmod 666 /var/run/docker.sock 또는 chown root:docker /var/run/docker.sock 로 소켓 접근 권한을 부여하세요."
+
+post_mortem:
+  root_cause: "도커 데몬 소켓 파일(/var/run/docker.sock)의 그룹 권한이 누락되어 일반 유저가 Docker API와 통신하지 못했습니다."
+  key_commands:
+    - "ls -la /var/run/docker.sock (도커 소켓 권한 확인)"
+    - "usermod -aG docker <유저명> (도커 그룹 유저 추가)"
+    - "chmod 666 /var/run/docker.sock (소켓 파일 읽기/쓰기 개방)"
+  real_world_lesson: "CI/CD 러너(Jenkins, GitHub Actions Runner) 구축 시 가장 흔하게 마주치는 도커 권한 에러입니다."

@@ -11,7 +11,7 @@ from rich import box
 
 from app.database.connection import init_db, get_db_session
 from app.database import crud, models
-from app.engine.stage_loader import load_all_challenge_metadata, sync_challenges_to_db, get_challenge
+from app.engine.stage_loader import load_all_challenge_metadata, sync_challenges_to_db, get_challenge, get_domain_catalog
 from app.engine.orchestrator import DockerOrchestrator
 from app.ui.components import (
     render_banner,
@@ -85,7 +85,7 @@ class ChaosQuestApp:
             choice = Prompt.ask("\n[bold yellow]선택할 메뉴 번호를 입력하세요[/]", default="1")
 
             if choice == "1":
-                self._stage_selection_menu()
+                self._domain_selection_menu()
             elif choice == "2":
                 self._show_leaderboard()
             elif choice == "3":
@@ -94,43 +94,135 @@ class ChaosQuestApp:
                 console.print("\n[bold green]👋 수고하셨습니다! 다음에 또 도전하세요.[/]")
                 sys.exit(0)
 
-    def _stage_selection_menu(self):
+    def _domain_selection_menu(self):
+        """1단계: 7대 대도메인 선택 화면"""
         while True:
             console.clear()
             stats = self._get_user_stats()
             render_banner(username=self.username, score=stats.get("total_score", 0), cleared_count=stats.get("cleared_count", 0), docker_active=orchestrator.is_docker_available)
 
-            challenges = load_all_challenge_metadata()
+            catalog = get_domain_catalog()
             cleared_ids = set(stats.get("cleared_stage_ids", []))
 
-            table = Table(title="[bold white]AVAILABLE INCIDENT STAGES[/]", box=box.ROUNDED, expand=True)
-            table.add_column("ID", justify="center", style="bold cyan", width=6)
-            table.add_column("상태", justify="center", width=12)
-            table.add_column("장애명", style="bold white")
-            table.add_column("분야", style="cyan", width=14)
-            table.add_column("난이도", style="yellow", width=10)
-            table.add_column("기본점수", justify="right", style="green", width=10)
+            table = Table(title="[bold white]🏛️ 7대 인프라 엔지니어링 도메인 (DOMAINS)[/]", box=box.ROUNDED, expand=True)
+            table.add_column("번호", justify="center", style="bold cyan", width=8)
+            table.add_column("도메인 분야", style="bold white", width=36)
+            table.add_column("포함된 트랙 수", justify="center", style="yellow", width=14)
+            table.add_column("총 문제 수", justify="center", style="green", width=12)
+            table.add_column("진척도 (Cleared)", justify="center", style="bold cyan")
 
-            for sid, ch in challenges.items():
-                is_cleared = sid in cleared_ids
-                status_badge = "[bold green]✅ CLEARED[/]" if is_cleared else "[bold red]🔥 UNSOLVED[/]"
+            for d_id, d_data in sorted(catalog.items()):
+                track_count = len(d_data["tracks"])
+                all_stages = []
+                for t in d_data["tracks"].values():
+                    all_stages.extend(t["stages"])
+                stage_count = len(all_stages)
+                cleared_in_domain = sum(1 for s in all_stages if s.id in cleared_ids)
+                progress_pct = int((cleared_in_domain / stage_count * 100)) if stage_count > 0 else 0
+                
                 table.add_row(
-                    ch.id,
-                    status_badge,
-                    ch.title,
-                    ch.category,
-                    ch.difficulty,
-                    f"{ch.base_score} pts",
+                    f"[{d_id}]",
+                    d_data["name"],
+                    f"{track_count}개 트랙",
+                    f"{stage_count}문제",
+                    f"[{'green' if progress_pct == 100 else 'yellow'}]{cleared_in_domain}/{stage_count} ({progress_pct}%)[/]",
                 )
 
             console.print(table)
-            console.print("\n[dim]도전할 스테이지 ID (예: 101)를 입력하세요. 메인으로 돌아가려면 0을 입력하세요.[/]")
-            choice = Prompt.ask("[bold yellow]스테이지 ID 선택[/]", default="101")
+            console.print("\n[dim]탐색할 도메인 번호 (1~7)를 입력하세요. 메인으로 돌아가려면 0을 입력하세요.[/]")
+            choice = Prompt.ask("[bold yellow]도메인 선택[/]", default="1")
 
             if choice == "0":
                 break
-            elif choice in challenges:
-                self._play_stage(choice)
+            try:
+                d_choice = int(choice)
+                if d_choice in catalog:
+                    self._track_selection_menu(d_choice)
+            except ValueError:
+                pass
+
+    def _track_selection_menu(self, domain_id: int):
+        """2단계: 해당 도메인 내 트랙(중분류) 선택 화면"""
+        while True:
+            console.clear()
+            stats = self._get_user_stats()
+            render_banner(username=self.username, score=stats.get("total_score", 0), cleared_count=stats.get("cleared_count", 0), docker_active=orchestrator.is_docker_available)
+
+            catalog = get_domain_catalog()
+            if domain_id not in catalog:
+                break
+
+            d_data = catalog[domain_id]
+            cleared_ids = set(stats.get("cleared_stage_ids", []))
+
+            table = Table(title=f"[bold white]{d_data['name']} > 인시던트 트랙[/]", box=box.ROUNDED, expand=True)
+            table.add_column("트랙 ID", justify="center", style="bold cyan", width=10)
+            table.add_column("트랙 주제", style="bold white")
+            table.add_column("문제 수", justify="center", style="green", width=10)
+            table.add_column("해결 완료", justify="center", style="bold cyan", width=14)
+
+            for t_id, t_data in sorted(d_data["tracks"].items()):
+                total_s = len(t_data["stages"])
+                cleared_s = sum(1 for s in t_data["stages"] if s.id in cleared_ids)
+                status_str = f"[bold green]✅ {cleared_s}/{total_s} 완료[/]" if cleared_s == total_s else f"[yellow]{cleared_s}/{total_s} 진행중[/]"
+                table.add_row(
+                    t_id,
+                    t_data["title"],
+                    f"{total_s}문제",
+                    status_str,
+                )
+
+            console.print(table)
+            console.print("\n[dim]도전할 트랙 ID (예: 101)를 입력하세요. 이전으로 돌아가려면 0을 입력하세요.[/]")
+            choice = Prompt.ask("[bold yellow]트랙 ID 선택[/]")
+
+            if choice == "0":
+                break
+            if choice in d_data["tracks"]:
+                self._sub_stage_selection_menu(domain_id, choice)
+
+    def _sub_stage_selection_menu(self, domain_id: int, track_id: str):
+        """3단계: 해당 트랙의 난이도별 세부 문제 목록"""
+        while True:
+            console.clear()
+            stats = self._get_user_stats()
+            render_banner(username=self.username, score=stats.get("total_score", 0), cleared_count=stats.get("cleared_count", 0), docker_active=orchestrator.is_docker_available)
+
+            catalog = get_domain_catalog()
+            if domain_id not in catalog or track_id not in catalog[domain_id]["tracks"]:
+                break
+
+            t_data = catalog[domain_id]["tracks"][track_id]
+            cleared_ids = set(stats.get("cleared_stage_ids", []))
+
+            table = Table(title=f"[bold white]{t_data['title']} > 난이도별 문제[/]", box=box.ROUNDED, expand=True)
+            table.add_column("문제 ID", justify="center", style="bold cyan", width=10)
+            table.add_column("상태", justify="center", width=12)
+            table.add_column("인시던트 제목", style="bold white")
+            table.add_column("난이도", justify="center", width=10)
+            table.add_column("배점", justify="right", style="green", width=10)
+
+            for st in t_data["stages"]:
+                is_cleared = st.id in cleared_ids
+                status_badge = "[bold green]✅ CLEARED[/]" if is_cleared else "[bold red]🔥 UNSOLVED[/]"
+                diff_color = "bold green" if st.difficulty == "Easy" else "bold yellow" if st.difficulty == "Medium" else "bold red"
+                table.add_row(
+                    st.id,
+                    status_badge,
+                    st.title,
+                    f"[{diff_color}]{st.difficulty}[/]",
+                    f"{st.base_score} pts",
+                )
+
+            console.print(table)
+            console.print("\n[dim]도전할 문제 ID (예: 101-1)를 입력하세요. 트랙 목록으로 돌아가려면 0을 입력하세요.[/]")
+            choice = Prompt.ask("[bold yellow]문제 ID 선택[/]")
+
+            if choice == "0":
+                break
+            stage_match = next((s for s in t_data["stages"] if s.id == choice), None)
+            if stage_match:
+                self._play_stage(stage_match.id)
 
     def _play_stage(self, stage_id: str):
         challenge = get_challenge(stage_id)

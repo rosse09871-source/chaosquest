@@ -1,0 +1,35 @@
+id: "103-1"
+domain_id: 1
+domain: "💾 파일시스템 & 스토리지"
+track_id: "103"
+track: "Track 103: 권한 & 소유권 지옥 (403 Forbidden)"
+title: "웹서버가 403 Forbidden을 뿜어내요! (권한 지옥)"
+category: "Filesystem"
+difficulty: "Easy"
+base_score: 500
+target_time_seconds: 600
+
+incident:
+  reporter: "QA Testing Team"
+  severity: "P2-HIGH"
+  symptom: "신규 배포 후 웹 페이지 접속 시 '403 Forbidden' 에러가 발생합니다. 웹 서버 프로세스(www-data)가 정적 파일에 접근하지 못하고 있습니다."
+  objective: "/var/www/html 디렉터리와 index.html 파일의 소유권 및 권한(chmod/chown)을 올바르게 수정하여 웹 요청이 200 OK로 성공하도록 복구하세요."
+
+hints:
+  - level: 1
+    cost: 50
+    text: "ls -la /var/www/html 로 소유자와 권한 비트를 확인하세요."
+  - level: 2
+    cost: 50
+    text: "디렉터리에는 실행 권한(755), 파일에는 읽기 권한(644)이 필요합니다."
+  - level: 3
+    cost: 50
+    text: "chmod 755 /var/www/html && chmod 644 /var/www/html/index.html && chown -R www-data:www-data /var/www/html"
+
+post_mortem:
+  root_cause: "배포 스크립트가 root 권한으로 파일을 복사하면서 디렉터리 실행 권한(x) 및 일반 유저 읽기 권한(r)이 누락되었습니다."
+  key_commands:
+    - "chmod 755 <디렉터리>"
+    - "chmod 644 <파일>"
+    - "chown -R www-data:www-data <경로>"
+  real_world_lesson: "CI/CD 자동 배포 파이프라인에서 root 권한으로 아티팩트를 압축 해제했을 때 가장 흔하게 발생하는 권한 사고입니다."

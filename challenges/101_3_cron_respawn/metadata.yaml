@@ -1,0 +1,35 @@
+id: "101-3"
+domain_id: 1
+domain: "💾 파일시스템 & 스토리지"
+track_id: "101"
+track: "Track 101: 유령 파일 & 파일 디스크립터 누수"
+title: "Kill해도 다시 살아나는 크론(Cron) 감시 데몬 추적"
+category: "Filesystem"
+difficulty: "Hard"
+base_score: 650
+target_time_seconds: 600
+
+incident:
+  reporter: "Lead System Administrator"
+  severity: "P1-CRITICAL"
+  symptom: "유령 파일을 물고 있는 악성 데몬(ghost_spawner)을 kill -9 로 강제 종료해도 5초 뒤에 다시 똑같은 프로세스가 부활하여 디스크를 다시 잠식합니다."
+  objective: "프로세스를 종료할 뿐만 아니라 이를 주기적으로 자동 부활시키는 크론/스케줄러 등록 파일(/etc/cron.d/ghost_watcher)을 찾아 영구 삭제하세요."
+
+hints:
+  - level: 1
+    cost: 50
+    text: "kill을 해도 즉시 되살아난다면 백그라운드 크론탭(Cron)이나 루프 스크립트가 돌고 있는 것입니다. /etc/cron* 디렉터리를 조사하세요."
+  - level: 2
+    cost: 50
+    text: "/etc/cron.d/ghost_watcher 파일 또는 /etc/cron.hourly 등을 열어 어떤 스크립트를 주기적으로 실행하고 있는지 확인하세요."
+  - level: 3
+    cost: 50
+    text: "rm -f /etc/cron.d/ghost_watcher 명령어로 크론 등록을 삭제한 후, pkill -9 -f ghost_spawner 로 프로세스를 완전히 종료하세요."
+
+post_mortem:
+  root_cause: "시스템 관리 스케줄러(/etc/cron.d/)에 비정상적인 데몬 자동 복구 크론잡이 등록되어 있어, 프로세스 종료 시마다 주기적으로 자동 재기동되었습니다."
+  key_commands:
+    - "ls -la /etc/cron.d/ /etc/cron.* (시스템 레벨 크론 설정 점검)"
+    - "rm -f /etc/cron.d/ghost_watcher (부활 크론 설정 파일 제거)"
+    - "pkill -9 -f ghost_spawner (남아있는 프로세스 최종 사살)"
+  real_world_lesson: "실무에서 침해 사고(보안 해킹)나 악성 스크립트는 프로세스를 죽여도 크론탭이나 systemd timer를 통해 지속성(Persistence)을 유지하므로 스케줄러 확인이 필수적입니다."

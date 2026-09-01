@@ -28,6 +28,10 @@ class PostMortem(BaseModel):
 
 class ChallengeMetadata(BaseModel):
     id: str
+    domain_id: int = 1
+    domain: str = "💾 파일시스템 & 스토리지"
+    track_id: str = "101"
+    track: str = "Track 101: 유령 파일 & 파일 디스크립터 누수"
     title: str
     category: str
     difficulty: str = "Easy"
@@ -73,6 +77,38 @@ def get_challenge(stage_id: str) -> Optional[ChallengeMetadata]:
     return all_stages.get(stage_id)
 
 
+def get_domain_catalog() -> Dict[int, Dict[str, Any]]:
+    """Groups all loaded challenges into Domains -> Tracks -> Stages."""
+    all_challenges = load_all_challenge_metadata()
+    catalog: Dict[int, Dict[str, Any]] = {}
+
+    for meta in all_challenges.values():
+        d_id = meta.domain_id
+        if d_id not in catalog:
+            catalog[d_id] = {
+                "domain_id": d_id,
+                "name": meta.domain,
+                "tracks": {},
+            }
+
+        t_id = meta.track_id
+        if t_id not in catalog[d_id]["tracks"]:
+            catalog[d_id]["tracks"][t_id] = {
+                "track_id": t_id,
+                "title": meta.track,
+                "stages": [],
+            }
+
+        catalog[d_id]["tracks"][t_id]["stages"].append(meta)
+
+    # Sort stages within each track by id
+    for d in catalog.values():
+        for t in d["tracks"].values():
+            t["stages"].sort(key=lambda s: s.id)
+
+    return catalog
+
+
 def sync_challenges_to_db(db: Session) -> int:
     """Synchronizes all filesystem challenge definitions into the database."""
     challenges = load_all_challenge_metadata()
@@ -81,7 +117,7 @@ def sync_challenges_to_db(db: Session) -> int:
         crud.upsert_stage(
             db=db,
             stage_id=meta.id,
-            title=meta.title,
+            title=f"[{meta.difficulty}] {meta.title}",
             category=meta.category,
             difficulty=meta.difficulty,
             base_score=meta.base_score,

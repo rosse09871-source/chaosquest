@@ -1,0 +1,34 @@
+id: "301-1"
+domain_id: 3
+domain: "🌐 네트워크 & DNS & 방화벽"
+track_id: "301"
+track: "Track 301: DNS 이름 풀이 실패 & 네임서버 유실"
+title: "서버에서 외부 도메인 조회가 안 돼요! (DNS 네임서버 유실)"
+category: "Network"
+difficulty: "Easy"
+base_score: 500
+target_time_seconds: 600
+
+incident:
+  reporter: "DevOps Engineer"
+  severity: "P1-CRITICAL"
+  symptom: "서버 내부에서 apt update, curl https://api.github.com 또는 외부 API 호출 시 'Could not resolve host' 에러가 발생하며 모든 네트워크 작업이 중단되었습니다."
+  objective: "/etc/resolv.conf 설정 파일을 확인하여 올바른 공용 DNS 네임서버(예: 8.8.8.8 또는 1.1.1.1)를 등록하고 도메인 이름 풀이(DNS Resolution)를 정상화하세요."
+
+hints:
+  - level: 1
+    cost: 50
+    text: "cat /etc/resolv.conf 로 현재 설정된 네임서버를 확인하세요."
+  - level: 2
+    cost: 50
+    text: "가짜 IP(192.0.2.1)가 적혀있어 도메인 조회가 실패하고 있습니다."
+  - level: 3
+    cost: 50
+    text: "echo 'nameserver 8.8.8.8' > /etc/resolv.conf 명령어로 구글 공용 DNS를 등록하세요."
+
+post_mortem:
+  root_cause: "/etc/resolv.conf 네임서버가 유실되어 도메인 질의가 실패했습니다."
+  key_commands:
+    - "cat /etc/resolv.conf"
+    - "echo 'nameserver 8.8.8.8' > /etc/resolv.conf"
+  real_world_lesson: "클라우드 VPC나 도커 네트워크에서 로컬 DNS가 꼬였을 때 자주 발생하는 대표적인 네트워크 장애입니다."

@@ -1,0 +1,35 @@
+id: "102-1"
+domain_id: 1
+domain: "💾 파일시스템 & 스토리지"
+track_id: "102"
+track: "Track 102: Inode 고갈 & 수만 개 임시 파일 누적"
+title: "용량은 많은데 파일 생성이 안 돼요! (Inode 고갈)"
+category: "Filesystem"
+difficulty: "Medium"
+base_score: 550
+target_time_seconds: 600
+
+incident:
+  reporter: "Backend Dev Team"
+  severity: "P1-CRITICAL"
+  symptom: "df -h 로 확인하면 디스크 용량이 80% 이상 넉넉한데도, 신규 세션 파일이나 로그를 생성하려 하면 'No space left on device' 에러가 뜹니다."
+  objective: "수만 개의 쓰레기 임시 파일로 고갈된 Inode 공간을 찾아 정리하고, 정상적으로 신규 파일이 생성될 수 있도록 복구하세요."
+
+hints:
+  - level: 1
+    cost: 50
+    text: "df -i 명령어로 Inode 사용량을 확인해 보세요."
+  - level: 2
+    cost: 50
+    text: "find /var/cache -type f | wc -l 등으로 파일이 대량으로 몰려 있는 디렉터리를 찾으세요."
+  - level: 3
+    cost: 50
+    text: "rm -rf /var/cache/.session_dumps/* 명령어로 대량 파일을 일괄 삭제하세요."
+
+post_mortem:
+  root_cause: "용량은 0바이트에 가까운 수십만 개의 작은 임시 파일이 누적되어 파일시스템의 Inode가 100% 소진되었습니다."
+  key_commands:
+    - "df -i (Inode 사용률 확인)"
+    - "find /var/cache -type f | wc -l (디렉터리별 파일 개수 집계)"
+    - "find /var/cache/.session_dumps -type f -delete (대량 파일 삭제)"
+  real_world_lesson: "PHP/Node 세션 파일 정리 크론탭이 멈췄을 때 발생하는 대표적인 장애입니다."

@@ -1,0 +1,34 @@
+id: "201-2"
+domain_id: 2
+domain: "⚙️ 프로세스 & 시스템 자원"
+track_id: "201"
+track: "Track 201: 포트 충돌 & 좀비 프로세스 선점"
+title: "연쇄 포트 충돌: 8080 및 9000번 포트 다중 점유"
+category: "Process"
+difficulty: "Medium"
+base_score: 550
+target_time_seconds: 600
+
+incident:
+  reporter: "Microservice Platform Team"
+  severity: "P1-CRITICAL"
+  symptom: "마이크로서비스 게이트웨이(8080)와 메트릭 에이전트(9000)가 동시에 포트 충돌로 기동되지 않습니다."
+  objective: "8080과 9000번 포트를 각각 점유하고 있는 불법 프로세스 2개를 모두 찾아 종료하고 /usr/local/bin/start_services.sh 를 실행하여 정상화하세요."
+
+hints:
+  - level: 1
+    cost: 50
+    text: "netstat -tlpn 으로 8080과 9000번 포트를 각각 열고 있는 프로세스의 PID를 확인하세요."
+  - level: 2
+    cost: 50
+    text: "각각 rogue_api(8080)와 rogue_metric(9000) 데몬입니다. 둘 다 kill 명령어로 종료하세요."
+  - level: 3
+    cost: 50
+    text: "두 프로세스를 모두 종료한 후 /usr/local/bin/start_services.sh 를 실행하세요."
+
+post_mortem:
+  root_cause: "복수의 마이크로서비스 테스트 인스턴스가 비정상 종료되면서 여러 포트가 동시에 잠겼습니다."
+  key_commands:
+    - "ss -tlpn | grep -E '8080|9000' (다중 포트 동시 조회)"
+    - "kill -9 <PID1> <PID2> (복수 프로세스 동시 종료)"
+  real_world_lesson: "멀티 컨테이너 환경에서 이전 컨테이너가 SIGKILL 없이 방치될 때 발생하는 다중 포트 충돌 패턴입니다."

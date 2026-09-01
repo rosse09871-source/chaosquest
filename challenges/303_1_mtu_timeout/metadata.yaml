@@ -1,0 +1,34 @@
+id: "303-1"
+domain_id: 3
+domain: "🌐 네트워크 & DNS & 방화벽"
+track_id: "303"
+track: "Track 303: MTU 불일치 & 패킷 단편화 오류"
+title: "대용량 패킷만 타임아웃돼요! (MTU 크기 불일치)"
+category: "Network"
+difficulty: "Hard"
+base_score: 650
+target_time_seconds: 600
+
+incident:
+  reporter: "Network Operations Center"
+  severity: "P1-CRITICAL"
+  symptom: "작은 ping 패킷은 잘 가는데, 1500바이트 이상의 대용량 HTTP 응답이나 파일 전송 시에만 무한 로딩/패킷 드롭이 발생합니다."
+  objective: "네트워크 인터페이스(eth0)의 MTU 값이 비정상적으로 작게(예: 576 또는 1200) 축소된 것을 확인하고 표준 MTU인 1500으로 복구하세요."
+
+hints:
+  - level: 1
+    cost: 50
+    text: "ip link show 또는 ifconfig 명령어로 eth0 인터페이스의 MTU 값을 확인하세요."
+  - level: 2
+    cost: 50
+    text: "현재 MTU가 576 등으로 매우 작게 설정되어 대용량 패킷이 단편화/드롭되고 있습니다."
+  - level: 3
+    cost: 50
+    text: "ip link set dev eth0 mtu 1500 (또는 ifconfig eth0 mtu 1500) 명령어로 MTU를 1500으로 복구하세요."
+
+post_mortem:
+  root_cause: "VPC 터널링/VPN 설정 스크립트의 오류로 이더넷 인터페이스의 MTU가 축소되어 대용량 TCP 세그먼트 전송 시 블랙홀 현상이 발생했습니다."
+  key_commands:
+    - "ip link show (인터페이스별 MTU 확인)"
+    - "ip link set dev eth0 mtu 1500 (MTU 재설정)"
+  real_world_lesson: "AWS VPC Peering이나 VPN(WireGuard/IPSec) 터널 연결 시 MTU 불일치로 인한 대용량 API 타임아웃의 전형적인 패턴입니다."

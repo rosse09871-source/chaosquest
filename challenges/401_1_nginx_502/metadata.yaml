@@ -1,0 +1,35 @@
+id: "401-1"
+domain_id: 4
+domain: "🚀 웹 서버 & 리버스 프록시"
+track_id: "401"
+track: "Track 401: Nginx 502 Bad Gateway"
+title: "Nginx가 502 Bad Gateway를 뿜어내요!"
+category: "Nginx"
+difficulty: "Medium"
+base_score: 600
+target_time_seconds: 600
+
+incident:
+  reporter: "Customer Support Team"
+  severity: "P1-CRITICAL"
+  symptom: "사용자들이 사이트(80번 포트)에 접속하면 '502 Bad Gateway' 에러 페이지가 노출되며 서비스가 마비되었습니다."
+  objective: "Nginx 에러 로그(/var/log/nginx/error.log)와 설정 파일(/etc/nginx/sites-available/default)을 분석하여 백엔드 애플리케이션과의 통신을 복구하세요."
+
+hints:
+  - level: 1
+    cost: 50
+    text: "cat /var/log/nginx/error.log 로 upstream 연결 에러를 확인하세요."
+  - level: 2
+    cost: 50
+    text: "백엔드는 8080 포트에서 돌고 있는데 Nginx는 8000 포트로 프록시하고 있습니다."
+  - level: 3
+    cost: 50
+    text: "/etc/nginx/sites-available/default 의 proxy_pass 를 http://127.0.0.1:8080; 으로 변경 후 nginx -s reload 하세요."
+
+post_mortem:
+  root_cause: "백엔드 애플리케이션 포트 변경 후 Nginx proxy_pass 설정이 동기화되지 않아 502 Bad Gateway가 발생했습니다."
+  key_commands:
+    - "tail -f /var/log/nginx/error.log"
+    - "nginx -t"
+    - "nginx -s reload"
+  real_world_lesson: "502 Bad Gateway의 90%는 프록시와 백엔드 간 포트/소켓 불일치에서 발생합니다."
