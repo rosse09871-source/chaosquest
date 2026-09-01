@@ -216,9 +216,19 @@ class ChaosQuestApp:
             time.sleep(2)
 
     def _enter_sandbox_action(self, stage_id: str, attempt):
-        cmd = orchestrator.get_shell_exec_command(stage_id, self.session_id)
+        session_id = attempt.session_id
+        if orchestrator.is_docker_available and not orchestrator.is_container_running(stage_id, session_id):
+            console.print("\n[bold cyan]⚙️ 샌드박스 컨테이너가 준비되지 않아 생성하고 고장을 주입하는 중...[/]")
+            try:
+                orchestrator.ensure_sandbox_running(stage_id, session_id)
+            except Exception as e:
+                console.print(f"[bold red]❌ 컨테이너 기동 실패: {e}[/]")
+                Prompt.ask("[dim]엔터를 누르세요...[/]")
+                return
+
+        cmd = orchestrator.get_shell_exec_command(stage_id, session_id)
         console.print(f"\n[bold yellow]👉 샌드박스 쉘에 접속합니다. 조사를 마치고 나오려면 'exit'를 입력하세요.[/]")
-        time.sleep(1)
+        time.sleep(0.5)
         try:
             subprocess.run(cmd)
         except Exception as e:
@@ -245,7 +255,7 @@ class ChaosQuestApp:
     def _verify_stage_action(self, challenge, attempt) -> bool:
         console.print("\n[bold cyan]🔍 복구 상태를 자동 채점 및 검증하는 중...[/]")
         time.sleep(1)
-        success, msg = orchestrator.verify_sandbox(challenge.id, self.session_id)
+        success, msg = orchestrator.verify_sandbox(challenge.id, attempt.session_id)
         
         console.print(f"\n{msg}\n")
         
@@ -255,7 +265,7 @@ class ChaosQuestApp:
                 mins, secs = divmod(finished.elapsed_seconds, 60)
                 solve_time_str = f"{mins:02d}분 {secs:02d}초"
 
-            orchestrator.destroy_sandbox(challenge.id, self.session_id)
+            orchestrator.destroy_sandbox(challenge.id, attempt.session_id)
 
             console.clear()
             render_post_mortem(challenge, solve_time_str=solve_time_str, score=finished.earned_score)
@@ -267,7 +277,7 @@ class ChaosQuestApp:
 
     def _reset_stage_action(self, stage_id: str, attempt):
         if Confirm.ask("[bold red]⚠️ 현재 진행 중인 인시던트를 초기화하시겠습니까?[/]"):
-            orchestrator.destroy_sandbox(stage_id, self.session_id)
+            orchestrator.destroy_sandbox(stage_id, attempt.session_id)
             with get_db_session() as db:
                 att = db.query(models.StageAttempt).filter(models.StageAttempt.id == attempt.id).first()
                 if att:

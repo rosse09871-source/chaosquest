@@ -155,6 +155,30 @@ class DockerOrchestrator:
 
         return is_success, output
 
+    def is_container_running(self, stage_id: str, session_id: str) -> bool:
+        """Checks if the container exists and is running."""
+        if not self._docker_available or not self._client:
+            return False
+        container_name = self._get_container_name(stage_id, session_id)
+        try:
+            container = self._client.containers.get(container_name)
+            return container.status == "running"
+        except (NotFound, DockerException):
+            return False
+
+    def ensure_sandbox_running(self, stage_id: str, session_id: str) -> Dict[str, Any]:
+        """Ensures that the sandbox container is up and running. If missing, spawns it."""
+        if self.is_container_running(stage_id, session_id):
+            container_name = self._get_container_name(stage_id, session_id)
+            container = self._client.containers.get(container_name)
+            return {
+                "container_id": container.id,
+                "container_name": container_name,
+                "status": container.status,
+                "mock": False,
+            }
+        return self.create_sandbox(stage_id, session_id)
+
     def destroy_sandbox(self, stage_id: str, session_id: str) -> bool:
         """Stops and removes the container."""
         container_name = self._get_container_name(stage_id, session_id)
