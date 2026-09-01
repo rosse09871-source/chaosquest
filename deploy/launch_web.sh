@@ -7,36 +7,21 @@ set -e
 DIR="$(cd "$(dirname "$0")/.." && pwd)"
 echo "📍 Current ChaosQuest root: $DIR"
 
-echo "📦 [1/4] Installing ttyd & Nginx..."
+echo "📦 [1/3] Installing Nginx..."
 sudo apt-get update -qq
 sudo apt-get install -y -qq nginx curl >/dev/null
 
-if ! command -v ttyd >/dev/null 2>&1; then
-    echo "Downloading ttyd binary..."
-    sudo curl -fsSL -o /usr/local/bin/ttyd https://github.com/tsl0922/ttyd/releases/download/1.7.7/ttyd.x86_64
-    sudo chmod +x /usr/local/bin/ttyd
-fi
-
-echo "⚙️ [2/4] Registering launcher wrapper /usr/local/bin/chaosquest-entry..."
-sudo bash -c "cat << 'LAUNCHER' > /usr/local/bin/chaosquest-entry
-#!/bin/bash
-export TERM=xterm-256color
-cd $DIR
-exec $DIR/.venv/bin/python -m app.main
-LAUNCHER"
-sudo chmod +x /usr/local/bin/chaosquest-entry
-
-echo "⚙️ [3/4] Registering systemd background service..."
+echo "⚙️ [2/3] Registering systemd background service (FastAPI Web GUI)..."
 sudo bash -c "cat << 'SERVICE' > /etc/systemd/system/chaosquest-web.service
 [Unit]
-Description=ChaosQuest Web Terminal Gateway
+Description=ChaosQuest Modern Web Arena Gateway (FastAPI + Uvicorn)
 After=network.target
 
 [Service]
 Type=simple
 User=ubuntu
 WorkingDirectory=$DIR
-ExecStart=/usr/local/bin/ttyd -p 7681 -W -t fontSize=16 -t theme={'background':'#1e1e1e'} /usr/local/bin/chaosquest-entry
+ExecStart=$DIR/.venv/bin/uvicorn app.web.server:app --host 127.0.0.1 --port 8000 --workers 2
 Restart=always
 RestartSec=3
 
