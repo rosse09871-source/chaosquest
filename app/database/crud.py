@@ -318,6 +318,7 @@ def get_posts(
     db: Session,
     category: Optional[str] = None,
     stage_id: Optional[str] = None,
+    user_id: Optional[int] = None,
     search: Optional[str] = None,
     sort_by: str = "latest",
     limit: int = 50,
@@ -328,6 +329,8 @@ def get_posts(
         query = query.filter(Post.category == category)
     if stage_id:
         query = query.filter(Post.stage_id == stage_id)
+    if user_id is not None:
+        query = query.filter(Post.user_id == user_id)
     if search:
         search_pattern = f"%{search.strip()}%"
         query = query.filter(

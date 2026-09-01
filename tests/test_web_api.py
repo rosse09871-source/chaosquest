@@ -94,10 +94,14 @@ def test_community_flow(client):
     assert data_post["status"] == "success"
     post_id = data_post["post_id"]
 
-    # 3. View post detail page
+    # 3. View post detail page and my posts
     res_detail = client.get(f"/community/{post_id}")
     assert res_detail.status_code == 200
     assert "테스트 게시글입니다" in res_detail.text
+
+    res_mine = client.get("/community?mine=true")
+    assert res_mine.status_code == 200
+    assert "테스트 게시글입니다" in res_mine.text
 
     # 4. Add a comment
     res_comment = client.post(

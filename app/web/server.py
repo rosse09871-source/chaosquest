@@ -218,11 +218,20 @@ def community_page(
     category: Optional[str] = None,
     search: Optional[str] = None,
     sort: str = "latest",
+    mine: Optional[str] = None,
     user: dict = Depends(get_current_user_obj),
 ):
     """Community Forum Home Page."""
+    is_mine = str(mine).lower() in ["true", "1", "yes"]
+    filter_user_id = user["id"] if is_mine else None
     with get_db_session() as db:
-        posts = crud.get_posts(db, category=category, search=search, sort_by=sort)
+        posts = crud.get_posts(
+            db,
+            category=category,
+            search=search,
+            sort_by=sort,
+            user_id=filter_user_id,
+        )
         stats = crud.get_user_progress_summary(db, user["id"])
     return templates.TemplateResponse(
         request=request,
@@ -233,6 +242,7 @@ def community_page(
             "posts": posts,
             "selected_category": category or "all",
             "selected_sort": sort,
+            "selected_mine": is_mine,
             "search_query": search or "",
             "docker_available": orchestrator.is_docker_available,
         },

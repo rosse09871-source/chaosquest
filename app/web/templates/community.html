@@ -114,35 +114,40 @@
             <!-- Category Pills -->
             <div class="flex flex-wrap items-center gap-2">
                 <a href="/community?category=all{% if search_query %}&search={{ search_query }}{% endif %}" 
-                    class="px-3.5 py-1.5 rounded-full border transition font-semibold {% if selected_category == 'all' %}bg-white/10 text-white border-white/20{% else %}bg-card text-slate-400 border-borderline hover:text-white{% endif %}">
+                    class="px-3.5 py-1.5 rounded-full border transition font-semibold {% if not selected_mine and selected_category == 'all' %}bg-white/10 text-white border-white/20{% else %}bg-card text-slate-400 border-borderline hover:text-white{% endif %}">
                     전체보기
                 </a>
+                <a href="/community?mine=true{% if search_query %}&search={{ search_query }}{% endif %}" 
+                    class="px-3.5 py-1.5 rounded-full border transition font-semibold flex items-center gap-1.5 {% if selected_mine %}bg-indigo-600 text-white border-indigo-500 shadow-sm{% else %}bg-card text-slate-400 border-borderline hover:text-white{% endif %}">
+                    <i class="fa-solid fa-user-pen text-[10px]"></i>
+                    <span>내가 쓴 글</span>
+                </a>
                 <a href="/community?category=writeup{% if search_query %}&search={{ search_query }}{% endif %}" 
-                    class="px-3.5 py-1.5 rounded-full border transition font-semibold {% if selected_category == 'writeup' %}bg-indigo-500/20 text-indigo-300 border-indigo-500/40{% else %}bg-card text-slate-400 border-borderline hover:text-white{% endif %}">
+                    class="px-3.5 py-1.5 rounded-full border transition font-semibold {% if not selected_mine and selected_category == 'writeup' %}bg-indigo-500/20 text-indigo-300 border-indigo-500/40{% else %}bg-card text-slate-400 border-borderline hover:text-white{% endif %}">
                     풀이 팁 (Write-up)
                 </a>
                 <a href="/community?category=qna{% if search_query %}&search={{ search_query }}{% endif %}" 
-                    class="px-3.5 py-1.5 rounded-full border transition font-semibold {% if selected_category == 'qna' %}bg-cyan-500/20 text-cyan-300 border-cyan-500/40{% else %}bg-card text-slate-400 border-borderline hover:text-white{% endif %}">
+                    class="px-3.5 py-1.5 rounded-full border transition font-semibold {% if not selected_mine and selected_category == 'qna' %}bg-cyan-500/20 text-cyan-300 border-cyan-500/40{% else %}bg-card text-slate-400 border-borderline hover:text-white{% endif %}">
                     질문 & 답변 (Q&A)
                 </a>
                 <a href="/community?category=war_story{% if search_query %}&search={{ search_query }}{% endif %}" 
-                    class="px-3.5 py-1.5 rounded-full border transition font-semibold {% if selected_category == 'war_story' %}bg-rose-500/20 text-rose-300 border-rose-500/40{% else %}bg-card text-slate-400 border-borderline hover:text-white{% endif %}">
+                    class="px-3.5 py-1.5 rounded-full border transition font-semibold {% if not selected_mine and selected_category == 'war_story' %}bg-rose-500/20 text-rose-300 border-rose-500/40{% else %}bg-card text-slate-400 border-borderline hover:text-white{% endif %}">
                     현업 장애 회고
                 </a>
                 <a href="/community?category=idea{% if search_query %}&search={{ search_query }}{% endif %}" 
-                    class="px-3.5 py-1.5 rounded-full border transition font-semibold {% if selected_category == 'idea' %}bg-amber-500/20 text-amber-300 border-amber-500/40{% else %}bg-card text-slate-400 border-borderline hover:text-white{% endif %}">
+                    class="px-3.5 py-1.5 rounded-full border transition font-semibold {% if not selected_mine and selected_category == 'idea' %}bg-amber-500/20 text-amber-300 border-amber-500/40{% else %}bg-card text-slate-400 border-borderline hover:text-white{% endif %}">
                     문제 제안 & 피드백
                 </a>
             </div>
 
             <!-- Sort Toggle -->
             <div class="flex items-center gap-1 font-mono text-[11px] self-end sm:self-auto">
-                <a href="/community?category={{ selected_category }}&sort=latest{% if search_query %}&search={{ search_query }}{% endif %}" 
+                <a href="/community?{% if selected_mine %}mine=true&{% else %}category={{ selected_category }}&{% endif %}sort=latest{% if search_query %}&search={{ search_query }}{% endif %}" 
                     class="px-2.5 py-1 rounded-md transition {% if selected_sort == 'latest' %}text-indigo-400 font-bold bg-white/5{% else %}text-slate-500 hover:text-slate-300{% endif %}">
                     최신순
                 </a>
                 <span class="text-slate-700">|</span>
-                <a href="/community?category={{ selected_category }}&sort=popular{% if search_query %}&search={{ search_query }}{% endif %}" 
+                <a href="/community?{% if selected_mine %}mine=true&{% else %}category={{ selected_category }}&{% endif %}sort=popular{% if search_query %}&search={{ search_query }}{% endif %}" 
                     class="px-2.5 py-1 rounded-md transition {% if selected_sort == 'popular' %}text-indigo-400 font-bold bg-white/5{% else %}text-slate-500 hover:text-slate-300{% endif %}">
                     추천순
                 </a>
@@ -157,8 +162,20 @@
                 <div class="w-12 h-12 rounded-2xl bg-surface border border-borderline flex items-center justify-center text-slate-500 mx-auto text-lg">
                     <i class="fa-solid fa-inbox"></i>
                 </div>
-                <h3 class="text-sm font-bold text-white">등록된 게시글이 없습니다.</h3>
-                <p class="text-xs text-slate-400">첫 번째 질문이나 풀이 팁을 공유해 보세요!</p>
+                <h3 class="text-sm font-bold text-white">
+                    {% if selected_mine %}
+                    내가 작성한 게시글이 없습니다.
+                    {% else %}
+                    등록된 게시글이 없습니다.
+                    {% endif %}
+                </h3>
+                <p class="text-xs text-slate-400">
+                    {% if selected_mine %}
+                    첫 번째 질문이나 인시던트 해결 노하우를 공유해 보세요!
+                    {% else %}
+                    첫 번째 질문이나 풀이 팁을 공유해 보세요!
+                    {% endif %}
+                </p>
                 <button onclick="openCreatePostModal()" class="mt-2 bg-indigo-600 hover:bg-indigo-500 text-white font-bold px-4 py-2 rounded-full text-xs transition">
                     첫 글 작성하기
                 </button>
