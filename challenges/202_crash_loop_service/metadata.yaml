@@ -1,0 +1,31 @@
+id: "202"
+title: "서비스가 무한 재시작돼요! (CrashLoop & 설정 오타)"
+category: "Process"
+difficulty: "Medium"
+base_score: 550
+target_time_seconds: 600
+
+incident:
+  reporter: "SRE On-Call Engineer"
+  severity: "P1-CRITICAL"
+  symptom: "결제 처리 데몬(payment_service)이 기동되자마자 1초 만에 크래시되어 계속 비정상 종료를 반복하고 있습니다."
+  objective: "/var/log/payment_service.log 에러 로그를 확인하여 /etc/chaos_app.conf 설정 파일의 오타를 수정하고 서비스를 정상 기동시키세요."
+
+hints:
+  - level: 1
+    cost: 50
+    text: "데몬이 왜 죽는지 원인을 알려면 로그를 봐야 합니다. /var/log/payment_service.log 파일을 열어 에러 스택트레이스를 확인하세요."
+  - level: 2
+    cost: 50
+    text: "로그를 보면 /etc/chaos_app.conf 파일의 설정 값(PORT 또는 DB_HOST) 파싱 오류가 발생하고 있습니다."
+  - level: 3
+    cost: 50
+    text: "/etc/chaos_app.conf 파일에서 PORT_NUMBER=NINE_NINE_NINE 으로 잘못 적힌 부분을 정수 포트 번호(예: PORT_NUMBER=9000)로 수정한 후 /usr/local/bin/start_payment_service.sh 를 실행하세요."
+
+post_mortem:
+  root_cause: "설정 파일(/etc/chaos_app.conf)에 숫자가 들어가야 할 포트 번호 항목에 오타 문자열이 기재되어 데몬 초기화 시점에 파싱 예외로 강제 종료되었습니다."
+  key_commands:
+    - "tail -n 50 /var/log/payment_service.log (크래시 로그 확인)"
+    - "cat /etc/chaos_app.conf (설정 파일 점검)"
+    - "/usr/local/bin/start_payment_service.sh (서비스 재시작)"
+  real_world_lesson: "쿠버네티스(K8s)나 도커 환경에서 가장 빈번하게 발생하는 'CrashLoopBackOff' 장애의 대표적인 원인은 환경변수/설정 파일 문법 에러입니다."

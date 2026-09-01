@@ -1,0 +1,31 @@
+id: "203"
+title: "서버가 버벅거리는데 범인이 누구지? (위장된 CPU 폭주 데몬)"
+category: "Process"
+difficulty: "Medium"
+base_score: 550
+target_time_seconds: 600
+
+incident:
+  reporter: "Infrastructure Monitoring Team"
+  severity: "P1-CRITICAL"
+  symptom: "서버의 CPU 사용량이 100%를 찍고 팬이 굉음을 내며 시스템 응답이 극도로 느려졌습니다. 악성 스크립트가 숨겨져 실행 중인 것으로 의심됩니다."
+  objective: "ps aux / top 명령어로 시스템 자원을 비정상적으로 소모하고 있는 위장된 악성 프로세스(/tmp/.hidden_miner.py)를 찾아 강제 종료하세요."
+
+hints:
+  - level: 1
+    cost: 50
+    text: "ps aux --sort=-%cpu 명령어로 현재 시스템에서 CPU 점유율이 가장 높은 상위 프로세스를 확인하세요."
+  - level: 2
+    cost: 50
+    text: "프로세스 목록 중 /tmp/.hidden_miner.py 라는 수상한 이름의 파이썬 스크립트가 CPU를 100% 가까이 차지하고 있습니다."
+  - level: 3
+    cost: 50
+    text: "해당 프로세스의 PID를 확인하고 kill -9 <PID> 명령어로 즉시 종료하고 /tmp/.hidden_miner.py 파일을 삭제하세요."
+
+post_mortem:
+  root_cause: "보안이 취약한 경로를 통해 유입된 비인가 채굴(Miner) 백그라운드 프로세스가 CPU 연산을 무한 루프로 실행하여 전체 서버 자원을 고갈시켰습니다."
+  key_commands:
+    - "top (실시간 CPU/메모리 모니터링)"
+    - "ps aux --sort=-%cpu | head -n 10 (CPU 점유율 상위 프로세스 정렬)"
+    - "kill -9 <PID> (악성 프로세스 강제 사살)"
+  real_world_lesson: "실무 클라우드 서버에서 보안 그룹(Security Group)이나 패스워드가 허술할 때 가장 자주 감염되는 코인 채굴 악성코드(XMRig 등) 대응 시나리오입니다."

@@ -1,0 +1,32 @@
+id: "103"
+title: "웹서버가 403 Forbidden을 뿜어내요! (권한 지옥)"
+category: "Filesystem"
+difficulty: "Easy"
+base_score: 500
+target_time_seconds: 600
+
+incident:
+  reporter: "QA Testing Team"
+  severity: "P2-HIGH"
+  symptom: "신규 배포 후 웹 페이지 접속 시 '403 Forbidden' 에러가 발생합니다. 웹 서버 프로세스(www-data)가 정적 파일에 접근하지 못하고 있습니다."
+  objective: "/var/www/html 디렉터리와 index.html 파일의 소유권 및 권한(chmod/chown)을 올바르게 수정하여 웹 요청이 200 OK로 성공하도록 복구하세요."
+
+hints:
+  - level: 1
+    cost: 50
+    text: "웹서버는 보통 'www-data' 유저 권한으로 동작합니다. /var/www 및 하위 디렉터리와 파일들의 권한을 ls -la /var/www/html 로 확인해 보세요."
+  - level: 2
+    cost: 50
+    text: "리눅스에서는 상위 디렉터리에 실행 권한(x, 디렉터리 진입 권한)이 없거나, 파일 자체에 읽기 권한(r)이 없으면 403 에러가 발생합니다."
+  - level: 3
+    cost: 50
+    text: "chmod 755 /var/www/html 및 chmod 644 /var/www/html/index.html 또는 chown -R www-data:www-data /var/www/html 명령어로 권한을 정상화하세요."
+
+post_mortem:
+  root_cause: "배포 스크립트에서 umask 설정이나 root 권한으로 파일을 복사하면서 디렉터리 탐색 권한(x) 및 일반 유저 읽기 권한(r)이 누락되었습니다."
+  key_commands:
+    - "ls -la /var/www/html (소유자 및 권한 비트 확인)"
+    - "chmod 755 <디렉터리> (디렉터리 진입 및 읽기 권한 부여)"
+    - "chmod 644 <파일> (일반 파일 읽기 권한 부여)"
+    - "chown -R www-data:www-data /var/www/html (웹서버 전용 유저로 소유권 변경)"
+  real_world_lesson: "CI/CD 자동 배포 파이프라인에서 root 권한으로 아티팩트를 압축 해제했을 때 웹 데몬이 접근하지 못하는 가장 흔한 권한 사고입니다."

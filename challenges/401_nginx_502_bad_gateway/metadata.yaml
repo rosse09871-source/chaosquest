@@ -1,0 +1,32 @@
+id: "401"
+title: "Nginx가 502 Bad Gateway를 뿜어내요! (리버스 프록시 장애)"
+category: "Nginx"
+difficulty: "Medium"
+base_score: 600
+target_time_seconds: 600
+
+incident:
+  reporter: "Customer Support Team"
+  severity: "P1-CRITICAL"
+  symptom: "사용자들이 사이트(80번 포트)에 접속하면 '502 Bad Gateway' 에러 페이지가 노출되며 서비스가 마비되었습니다."
+  objective: "Nginx 에러 로그(/var/log/nginx/error.log)와 설정 파일(/etc/nginx/sites-available/default 또는 /etc/nginx/conf.d/)을 분석하여 백엔드 애플리케이션과의 통신을 복구하세요."
+
+hints:
+  - level: 1
+    cost: 50
+    text: "Nginx 에러 원인을 파악하기 위해 cat /var/log/nginx/error.log 또는 tail -n 20 /var/log/nginx/error.log 를 확인하세요."
+  - level: 2
+    cost: 50
+    text: "에러 로그에 'connect() failed (111: Connection refused) while connecting to upstream' 이 찍혀 있습니다. 현재 백엔드 앱이 몇 번 포트에서 돌고 있는지 netstat -tlpn 으로 확인하세요."
+  - level: 3
+    cost: 50
+    text: "백엔드는 8080 포트에서 돌고 있으나 Nginx 설정에는 proxy_pass http://127.0.0.1:8000; 으로 되어 있습니다. Nginx 설정 파일의 포트를 8080으로 수정 후 nginx -s reload (또는 service nginx reload) 를 실행하세요."
+
+post_mortem:
+  root_cause: "백엔드 애플리케이션 포트 변경 작업 후, 앞단 리버스 프록시(Nginx)의 upstream proxy_pass 포트 설정이 동기화되지 않아 502 Bad Gateway가 발생했습니다."
+  key_commands:
+    - "tail -f /var/log/nginx/error.log (Nginx 에러 로그 실시간 추적)"
+    - "ss -tlpn 또는 netstat -tlpn (백엔드 실제 수신 포트 확인)"
+    - "nginx -t (Nginx 설정 파일 문법 검사)"
+    - "nginx -s reload (Nginx 무중단 설정 리로드)"
+  real_world_lesson: "실무 웹 서비스에서 가장 흔하게 마주치는 '502 Bad Gateway'의 90%는 Nginx와 백엔드(FastAPI/Django/Node/Spring) 간의 포트나 소켓 경로 불일치에서 발생합니다."
