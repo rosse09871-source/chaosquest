@@ -139,8 +139,13 @@ def finish_stage_attempt(
         target_time = stage.target_time_seconds if stage else 600
 
         # Calculation rules:
-        # 1. Hint penalty: -50 pts per hint
-        hint_penalty = attempt.hints_used * 50
+        # 1. Hint penalty: Levels 1-3 free (0 pts), Level 4 (-50 pts), Level 5 (-100 pts)
+        hint_penalty = 0
+        if attempt.hints_used == 4:
+            hint_penalty = 50
+        elif attempt.hints_used >= 5:
+            hint_penalty = 150
+
         # 2. Time bonus: if solved faster than target time
         time_bonus = 0
         if attempt.elapsed_seconds < target_time:

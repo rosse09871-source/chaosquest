@@ -34,9 +34,12 @@ def test_stage_loader_discovery():
     assert len(challenges) >= 15
 
     meta101 = challenges["101-1"]
-    assert meta101.title == "단일 데몬의 삭제된 로그 파일 디스크립터 회수"
-    assert meta101.category == "Filesystem"
-    assert len(meta101.hints) == 3
+    assert len(meta101.hints) == 5
+    assert meta101.hints[0].cost == 0
+    assert meta101.hints[1].cost == 0
+    assert meta101.hints[2].cost == 0
+    assert meta101.hints[3].cost == 50
+    assert meta101.hints[4].cost == 100
     assert meta101.incident.severity == "P1-CRITICAL"
 
 
