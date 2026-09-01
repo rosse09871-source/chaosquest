@@ -1,0 +1,22 @@
+id: "503-1"
+domain_id: 5
+domain: "도커 & 컨테이너 런타임"
+track_id: "503"
+track: "Track 503: 컨테이너 리소스 고갈 & OOM"
+title: "도커 JSON 로그 폭주로 인한 디스크 잠식"
+category: "Docker"
+difficulty: "Easy"
+base_score: 500
+target_time_seconds: 600
+incident:
+  reporter: "Prometheus Node Exporter"
+  severity: "P1-CRITICAL"
+  symptom: "컨테이너 로그 디렉터리(/var/lib/docker/containers) 내부의 json.log 파일이 비정상적으로 비대해져 디스크가 고갈되고 있습니다."
+  objective: "비대해진 로그 파일을 truncate(크기 0으로 비우기)하고 백그라운드 로깅 프로세스를 정상화하세요."
+post_mortem:
+  root_cause: "컨테이너 애플리케이션의 디버그 로깅이 루프를 돌며 수백 MB의 JSON 로그를 무한 생성함."
+  key_commands:
+    - "du -sh /var/lib/docker/containers/*"
+    - "> /var/lib/docker/containers/app_container_id/app-json.log"
+    - "pkill -f flood_logger"
+  real_world_lesson: "도커 데몬 daemon.json에 max-size 및 max-file 로그 회전 정책을 필수로 적용해야 합니다."

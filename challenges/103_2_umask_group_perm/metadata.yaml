@@ -1,6 +1,6 @@
 id: "103-2"
 domain_id: 1
-domain: "💾 파일시스템 & 스토리지"
+domain: " 파일시스템 & 스토리지"
 track_id: "103"
 track: "Track 103: 권한 & 소유권 지옥 (403 Forbidden)"
 title: "소유 그룹 불일치 및 SGID 누락: www-data 쓰기 거부"

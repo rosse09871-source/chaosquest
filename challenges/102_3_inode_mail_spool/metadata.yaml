@@ -1,6 +1,6 @@
 id: "102-3"
 domain_id: 1
-domain: "💾 파일시스템 & 스토리지"
+domain: " 파일시스템 & 스토리지"
 track_id: "102"
 track: "Track 102: Inode 고갈 & 수만 개 임시 파일 누적"
 title: "메일 큐(Mail Spool) 폭증으로 인한 Inode 100% 및 생성 스크립트 차단"

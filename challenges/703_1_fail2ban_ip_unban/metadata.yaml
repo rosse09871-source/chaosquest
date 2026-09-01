@@ -1,6 +1,6 @@
 id: "703-1"
 domain_id: 7
-domain: "☁️ AWS 클라우드 & 인프라 보안"
+domain: "️ AWS 클라우드 & 인프라 보안"
 track_id: "703"
 track: "Track 703: Fail2ban 침입 차단 & IP 격리 해제"
 title: "사내 개발자 IP가 차단되었어요! (Fail2ban IP Unban)"

@@ -1,6 +1,6 @@
 id: "303-1"
 domain_id: 3
-domain: "🌐 네트워크 & DNS & 방화벽"
+domain: " 네트워크 & DNS & 방화벽"
 track_id: "303"
 track: "Track 303: MTU 불일치 & 패킷 단편화 오류"
 title: "로컬호스트(Loopback / 127.0.0.1) 통신 마비 복구"

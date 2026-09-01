@@ -1,6 +1,6 @@
 id: "701-3"
 domain_id: 7
-domain: "☁️ AWS 클라우드 & 인프라 보안"
+domain: "️ AWS 클라우드 & 인프라 보안"
 track_id: "701"
 track: "Track 701: SSH 키 권한 & 인증 실패"
 title: "sshd_config 이중 인증 차단으로 인한 원격 접속 전면 잠금"

@@ -1,6 +1,6 @@
 id: "102-2"
 domain_id: 1
-domain: "💾 파일시스템 & 스토리지"
+domain: " 파일시스템 & 스토리지"
 track_id: "102"
 track: "Track 102: Inode 고갈 & 수만 개 임시 파일 누적"
 title: "숨겨진 다단계 세션 디렉터리 Inode 추적 및 대량 삭제"

@@ -1,6 +1,6 @@
 id: "301-2"
 domain_id: 3
-domain: "🌐 네트워크 & DNS & 방화벽"
+domain: " 네트워크 & DNS & 방화벽"
 track_id: "301"
 track: "Track 301: DNS 이름 풀이 실패 & 네임서버 유실"
 title: "/etc/hosts 파일 오염(Poisoning)으로 인한 내부 API 주소 왜곡"

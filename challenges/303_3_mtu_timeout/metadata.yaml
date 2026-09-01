@@ -1,6 +1,6 @@
 id: "303-3"
 domain_id: 3
-domain: "🌐 네트워크 & DNS & 방화벽"
+domain: " 네트워크 & DNS & 방화벽"
 track_id: "303"
 track: "Track 303: MTU 불일치 & 패킷 단편화 오류"
 title: "대용량 패킷만 타임아웃돼요! (MTU 크기 불일치)"

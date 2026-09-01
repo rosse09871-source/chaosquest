@@ -1,0 +1,22 @@
+id: "801-3"
+domain_id: 8
+domain: "CI/CD & 릴리즈 파이프라인"
+track_id: "801"
+track: "Track 801: 릴리즈 배포 & 빌드 락"
+title: "동적 공유 라이브러리(LD_LIBRARY_PATH) 경로 누락 복구"
+category: "CI/CD"
+difficulty: "Hard"
+base_score: 700
+target_time_seconds: 600
+incident:
+  reporter: "Release Manager"
+  severity: "P1-CRITICAL"
+  symptom: "신규 컴파일 바이너리(/opt/bin/app_core) 실행 시 /opt/lib 경로가 라이브러리 검색 경로에 누락되어 'cannot open shared object file: libcustom.so' 에러로 구동되지 않습니다."
+  objective: "/etc/ld.so.conf.d/app.conf 파일에 '/opt/lib' 경로를 추가하고 ldconfig를 실행하여 링커 캐시를 갱신하세요."
+post_mortem:
+  root_cause: "외부 커스텀 C-Extension 라이브러리 설치 경로가 시스템 ldconfig 캐시에 등록되지 않음."
+  key_commands:
+    - "echo '/opt/lib' > /etc/ld.so.conf.d/app.conf"
+    - "ldconfig"
+    - "ldconfig -p | grep libcustom"
+  real_world_lesson: "컨테이너 이미지 빌드 시 커스텀 라이브러리 경로는 Dockerfile에 ldconfig 갱신 단계를 필수로 포함해야 합니다."

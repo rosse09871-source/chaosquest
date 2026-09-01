@@ -1,6 +1,6 @@
 id: "301-3"
 domain_id: 3
-domain: "🌐 네트워크 & DNS & 방화벽"
+domain: " 네트워크 & DNS & 방화벽"
 track_id: "301"
 track: "Track 301: DNS 이름 풀이 실패 & 네임서버 유실"
 title: "검색 도메인(search domain) 누락으로 인한 단축 호스트명 질의 불가"

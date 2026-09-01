@@ -1,0 +1,21 @@
+id: "801-2"
+domain_id: 8
+domain: "CI/CD & 릴리즈 파이프라인"
+track_id: "801"
+track: "Track 801: 릴리즈 배포 & 빌드 락"
+title: "빌드 러너 패키지 캐시 손상 복구"
+category: "CI/CD"
+difficulty: "Medium"
+base_score: 600
+target_time_seconds: 600
+incident:
+  reporter: "Jenkins Build Node"
+  severity: "P1-CRITICAL"
+  symptom: "빌드 캐시 디렉터리(/root/.cache/pip/wheels)에 0바이트 손상 파일(corrupted.whl)이 생성되어 패키지 빌드 작업이 계속 실패합니다."
+  objective: "/root/.cache/pip 디렉터리를 비우거나 손상된 휠 파일을 삭제하여 캐시를 초기화하세요."
+post_mortem:
+  root_cause: "디스크 I/O 순간 지연으로 인해 휠 패키지 다운로드 중 불완전한 파일이 캐시로 저장됨."
+  key_commands:
+    - "rm -rf /root/.cache/pip/*"
+    - "mkdir -p /root/.cache/pip"
+  real_world_lesson: "빌드 아티팩트 캐시는 정기적인 무효화(Purge) 스케줄을 적용해야 합니다."

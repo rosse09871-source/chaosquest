@@ -1,6 +1,6 @@
 id: "202-3"
 domain_id: 2
-domain: "⚙️ 프로세스 & 시스템 자원"
+domain: "️ 프로세스 & 시스템 자원"
 track_id: "202"
 track: "Track 202: CrashLoop 무한 재시작 & 설정 에러"
 title: "최대 파일 디스크립터 한도(ulimit nofile) 부족으로 인한 CrashLoop"

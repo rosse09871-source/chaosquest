@@ -1,0 +1,23 @@
+id: "503-2"
+domain_id: 5
+domain: "도커 & 컨테이너 런타임"
+track_id: "503"
+track: "Track 503: 컨테이너 리소스 고갈 & OOM"
+title: "메모리 누수 워커와 주기적 OOMKilled 크래시"
+category: "Docker"
+difficulty: "Medium"
+base_score: 600
+target_time_seconds: 600
+incident:
+  reporter: "Kubernetes Kubelet / Cgroup Watcher"
+  severity: "P1-CRITICAL"
+  symptom: "백그라운드 메시지 큐 워커가 기동 후 메모리를 무한 증식시켜 Cgroup 한도(Memory Limit)에 도달해 137(OOMKilled)로 강제 종료되는 크래시 루프가 발생하고 있습니다."
+  objective: "누수 스크립트(/usr/local/bin/queue_worker.py)의 무한 배열 누수 버그를 수정하거나 정상 모드로 재기동하세요."
+post_mortem:
+  root_cause: "워커 코드 내 글로벌 리스트에 처리된 메시지 객체를 unbind하지 않고 무한 append하여 메모리 릭 발생."
+  key_commands:
+    - "ps -eo pid,user,%mem,command --sort=-%mem"
+    - "cat /usr/local/bin/queue_worker.py"
+    - "pkill -f queue_worker.py"
+    - "sed -i 's/ENABLE_LEAK = True/ENABLE_LEAK = False/' /usr/local/bin/queue_worker.py"
+  real_world_lesson: "컨테이너 환경에서는 캐시 만료 정책(TTL/LRU)과 cgroup 메모리 제한을 면밀히 설계해야 합니다."

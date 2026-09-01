@@ -1,6 +1,6 @@
 id: "403-1"
 domain_id: 4
-domain: "🚀 웹 서버 & 리버스 프록시"
+domain: " 웹 서버 & 리버스 프록시"
 track_id: "403"
 track: "Track 403: 413 Request Entity Too Large & 버퍼 제한"
 title: "대용량 파일 업로드 시 413 에러가 떠요!"

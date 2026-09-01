@@ -1,6 +1,6 @@
 id: "203-2"
 domain_id: 2
-domain: "⚙️ 프로세스 & 시스템 자원"
+domain: "️ 프로세스 & 시스템 자원"
 track_id: "203"
 track: "Track 203: CPU 100% 폭주 & 악성 데몬"
 title: "커널 스레드로 위장한 악성 CPU 폭주 프로세스 추적"

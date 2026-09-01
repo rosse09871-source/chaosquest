@@ -28,7 +28,7 @@ def test_api_catalog(client):
     assert response.status_code == 200
     data = response.json()
     assert "catalog" in data
-    assert len(data["catalog"]) == 7
+    assert len(data["catalog"]) >= 7
 
 
 def test_api_leaderboard(client):

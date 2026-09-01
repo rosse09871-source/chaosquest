@@ -1,0 +1,22 @@
+id: "603-3"
+domain_id: 6
+domain: "데이터베이스 & 캐시 연동"
+track_id: "603"
+track: "Track 603: DB 커넥션 풀 & 좀비 락"
+title: "악성 슬로우 쿼리 프로세스 추적 및 진압"
+category: "Database"
+difficulty: "Hard"
+base_score: 700
+target_time_seconds: 600
+incident:
+  reporter: "AWS CloudWatch Alarm"
+  severity: "P1-CRITICAL"
+  symptom: "인덱스 없이 수백만 건을 순회하는 악성 쿼리 데몬(rogue_query_runner.py)이 CPU를 100% 점유하고 있습니다."
+  objective: "고부하 슬로우 쿼리 데몬(rogue_query_runner.py)을 종료하고 파일 권한을 제거하세요."
+post_mortem:
+  root_cause: "비인가 배치 작업이 피크 타임에 인덱스 없는 무거운 집계 쿼리를 무한 반복 실행함."
+  key_commands:
+    - "top -b -n 1"
+    - "pkill -9 -f rogue_query_runner.py"
+    - "chmod 000 /usr/local/bin/rogue_query_runner.py"
+  real_world_lesson: "장시간 실행 쿼리(statement_timeout)를 제한하고 슬로우 쿼리 로그를 모니터링해야 합니다."

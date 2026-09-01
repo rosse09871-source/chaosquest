@@ -1,6 +1,6 @@
 id: "202-2"
 domain_id: 2
-domain: "⚙️ 프로세스 & 시스템 자원"
+domain: "️ 프로세스 & 시스템 자원"
 track_id: "202"
 track: "Track 202: CrashLoop 무한 재시작 & 설정 에러"
 title: "JSON 설정 파일 구문 에러(Syntax Error)로 인한 서비스 기동 실패"

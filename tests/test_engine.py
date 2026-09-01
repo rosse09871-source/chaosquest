@@ -45,9 +45,10 @@ def test_stage_loader_discovery():
 
 def test_domain_catalog():
     catalog = get_domain_catalog()
-    assert len(catalog) == 7  # All 7 domains present
+    assert len(catalog) >= 7  # All domains present
     assert 1 in catalog  # Domain 1: Filesystem
     assert 7 in catalog  # Domain 7: AWS Cloud & Security
+    assert 8 in catalog  # Domain 8: CI/CD Pipeline
     assert "101" in catalog[1]["tracks"]
 
 

@@ -1,6 +1,6 @@
 id: "401-2"
 domain_id: 4
-domain: "🚀 웹 서버 & 리버스 프록시"
+domain: " 웹 서버 & 리버스 프록시"
 track_id: "401"
 track: "Track 401: Nginx 502 Bad Gateway"
 title: "기초 Nginx 데몬 중단: 웹서버 재기동 및 200 OK 복구"

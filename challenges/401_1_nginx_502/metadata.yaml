@@ -1,6 +1,6 @@
 id: "401-1"
 domain_id: 4
-domain: "🚀 웹 서버 & 리버스 프록시"
+domain: " 웹 서버 & 리버스 프록시"
 track_id: "401"
 track: "Track 401: Nginx 502 Bad Gateway"
 title: "Nginx가 502 Bad Gateway를 뿜어내요!"

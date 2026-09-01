@@ -1,0 +1,21 @@
+id: "603-2"
+domain_id: 6
+domain: "데이터베이스 & 캐시 연동"
+track_id: "603"
+track: "Track 603: DB 커넥션 풀 & 좀비 락"
+title: "Idle In Transaction 장기 트랜잭션 락 해제"
+category: "Database"
+difficulty: "Medium"
+base_score: 600
+target_time_seconds: 600
+incident:
+  reporter: "DBA Operations Bot"
+  severity: "P1-CRITICAL"
+  symptom: "비정상적인 파이썬 스크립트(zombie_tx.py)가 트랜잭션을 열고 잠금(Lock)을 쥔 채 무한 sleep에 빠져 다른 모든 DB 작업이 대기 상태로 블로킹되고 있습니다."
+  objective: "잠금을 쥐고 있는 좀비 트랜잭션 프로세스(zombie_tx.py)를 식별하여 강제 종료(kill)하세요."
+post_mortem:
+  root_cause: "예외 처리 누락으로 인해 커밋/롤백되지 않은 트랜잭션이 커넥션 풀 반환 없이 무한 점유됨."
+  key_commands:
+    - "ps aux | grep zombie_tx"
+    - "pkill -9 -f zombie_tx.py"
+  real_world_lesson: "DB 드라이버에 idle_in_transaction_session_timeout을 설정하여 좀비 트랜잭션을 자동 회수해야 합니다."

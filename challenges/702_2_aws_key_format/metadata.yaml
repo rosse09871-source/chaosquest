@@ -1,6 +1,6 @@
 id: "702-2"
 domain_id: 7
-domain: "☁️ AWS 클라우드 & 인프라 보안"
+domain: "️ AWS 클라우드 & 인프라 보안"
 track_id: "702"
 track: "Track 702: AWS CLI 자격증명 & 리전 설정 오류"
 title: "AWS Access Key ID 형식 오류 및 앞뒤 공백 제거"

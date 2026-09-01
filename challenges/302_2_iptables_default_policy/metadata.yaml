@@ -1,6 +1,6 @@
 id: "302-2"
 domain_id: 3
-domain: "🌐 네트워크 & DNS & 방화벽"
+domain: " 네트워크 & DNS & 방화벽"
 track_id: "302"
 track: "Track 302: iptables / ufw 유령 방화벽 차단"
 title: "방화벽 기본 정책(Policy)이 DROP으로 잠긴 전면 통신 차단"

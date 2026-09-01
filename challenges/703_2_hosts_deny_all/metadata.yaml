@@ -1,6 +1,6 @@
 id: "703-2"
 domain_id: 7
-domain: "☁️ AWS 클라우드 & 인프라 보안"
+domain: "️ AWS 클라우드 & 인프라 보안"
 track_id: "703"
 track: "Track 703: Fail2ban 침입 차단 & IP 격리 해제"
 title: "TCP Wrapper(/etc/hosts.deny) ALL: ALL 전면 차단 해제"

@@ -1,6 +1,6 @@
 id: "301-1"
 domain_id: 3
-domain: "🌐 네트워크 & DNS & 방화벽"
+domain: " 네트워크 & DNS & 방화벽"
 track_id: "301"
 track: "Track 301: DNS 이름 풀이 실패 & 네임서버 유실"
 title: "서버에서 외부 도메인 조회가 안 돼요! (DNS 네임서버 유실)"

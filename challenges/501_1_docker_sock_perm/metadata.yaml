@@ -1,6 +1,6 @@
 id: "501-1"
 domain_id: 5
-domain: "🐳 도커 & 컨테이너 런타임"
+domain: " 도커 & 컨테이너 런타임"
 track_id: "501"
 track: "Track 501: 도커 소켓 권한 & 데몬 통신 장애"
 title: "도커 소켓 권한 거부: docker.sock Permission Denied"

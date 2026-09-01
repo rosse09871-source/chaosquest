@@ -1,6 +1,6 @@
 id: "203-3"
 domain_id: 2
-domain: "⚙️ 프로세스 & 시스템 자원"
+domain: "️ 프로세스 & 시스템 자원"
 track_id: "203"
 track: "Track 203: CPU 100% 폭주 & 악성 데몬"
 title: "멀티코어 전체를 잠식한 포크밤(Fork) CPU 루프 일괄 사살"

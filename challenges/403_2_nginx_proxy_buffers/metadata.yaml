@@ -1,6 +1,6 @@
 id: "403-2"
 domain_id: 4
-domain: "🚀 웹 서버 & 리버스 프록시"
+domain: " 웹 서버 & 리버스 프록시"
 track_id: "403"
 track: "Track 403: 413 Request Entity Too Large & 버퍼 제한"
 title: "대용량 JWT 쿠키 헤더로 인한 Nginx 502/400 버퍼 오버플로우"

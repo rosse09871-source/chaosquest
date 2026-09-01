@@ -1,0 +1,22 @@
+id: "503-3"
+domain_id: 5
+domain: "도커 & 컨테이너 런타임"
+track_id: "503"
+track: "Track 503: 컨테이너 리소스 고갈 & OOM"
+title: "도커 브리지 네트워크 내장 DNS 바인딩 단절"
+category: "Docker"
+difficulty: "Hard"
+base_score: 700
+target_time_seconds: 600
+incident:
+  reporter: "App Mesh Discovery"
+  severity: "P1-CRITICAL"
+  symptom: "컨테이너 내부 서비스가 내부 백엔드 호스트 'backend.internal.service'로 통신할 때 DNS 질의가 차단되어 500 장애가 발생하고 있습니다."
+  objective: "/etc/hosts에 '172.20.0.10 backend.internal.service' 정적 매핑을 추가하여 통신을 복구하세요."
+post_mortem:
+  root_cause: "사용자 정의 도커 네트워크 브리지의 로컬 DNS 캐시가 손상되어 정적 호스트 매핑이 누락됨."
+  key_commands:
+    - "ping -c 1 backend.internal.service"
+    - "echo '172.20.0.10 backend.internal.service' >> /etc/hosts"
+    - "getent hosts backend.internal.service"
+  real_world_lesson: "내부 MSA 서비스 디스커버리는 CoreDNS 또는 /etc/hosts 정적 네임 레졸루션을 이중화해야 합니다."

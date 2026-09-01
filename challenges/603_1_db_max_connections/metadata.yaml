@@ -1,0 +1,21 @@
+id: "603-1"
+domain_id: 6
+domain: "데이터베이스 & 캐시 연동"
+track_id: "603"
+track: "Track 603: DB 커넥션 풀 & 좀비 락"
+title: "DB 최대 접속 한도(max_connections) 초과 장애"
+category: "Database"
+difficulty: "Easy"
+base_score: 500
+target_time_seconds: 600
+incident:
+  reporter: "Web API Gateway Sentry"
+  severity: "P1-CRITICAL"
+  symptom: "데이터베이스 설정 파일(/etc/mysql_mock/my.cnf)의 max_connections가 '5'로 너무 작게 제한되어 신규 클라이언트 연결이 'Too many connections'로 거부되고 있습니다."
+  objective: "/etc/mysql_mock/my.cnf의 max_connections 값을 100 이상으로 수정하세요."
+post_mortem:
+  root_cause: "테스트 환경 설정이 배포되어 프로덕션 커넥션 풀 크기(100)를 수용하지 못함."
+  key_commands:
+    - "cat /etc/mysql_mock/my.cnf"
+    - "sed -i 's/max_connections = 5/max_connections = 200/' /etc/mysql_mock/my.cnf"
+  real_world_lesson: "데이터베이스 커넥션 풀 설정과 max_connections 파라미터는 애플리케이션 인스턴스 수에 맞추어 튜닝해야 합니다."

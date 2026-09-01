@@ -1,6 +1,6 @@
 id: "302-1"
 domain_id: 3
-domain: "🌐 네트워크 & DNS & 방화벽"
+domain: " 네트워크 & DNS & 방화벽"
 track_id: "302"
 track: "Track 302: iptables / ufw 유령 방화벽 차단"
 title: "서버는 떠 있는데 통신이 묵묵부답이에요! (방화벽 차단)"

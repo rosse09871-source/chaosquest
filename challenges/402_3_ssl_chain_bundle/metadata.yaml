@@ -1,6 +1,6 @@
 id: "402-3"
 domain_id: 4
-domain: "🚀 웹 서버 & 리버스 프록시"
+domain: " 웹 서버 & 리버스 프록시"
 track_id: "402"
 track: "Track 402: SSL/TLS 인증서 & HTTPS 설정"
 title: "중간 CA 인증서 체인 누락(Certificate Chain Incomplete) 복구"

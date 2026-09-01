@@ -1,6 +1,6 @@
 id: "602-3"
 domain_id: 6
-domain: "🗄️ 데이터베이스 & 캐시 연동"
+domain: "️ 데이터베이스 & 캐시 연동"
 track_id: "602"
 track: "Track 602: Redis / 캐시 바인딩 & 포트 오류"
 title: "Redis 메모리 초과(OOM command not allowed) 및 Eviction 정책 튜닝"

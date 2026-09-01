@@ -1,6 +1,6 @@
 id: "502-1"
 domain_id: 5
-domain: "🐳 도커 & 컨테이너 런타임"
+domain: " 도커 & 컨테이너 런타임"
 track_id: "502"
 track: "Track 502: 컨테이너 환경변수 & 설정 꼬임"
 title: "컨테이너 실행 환경 플래그(APP_ENV) 누락 복구"

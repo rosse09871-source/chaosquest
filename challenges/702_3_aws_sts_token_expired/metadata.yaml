@@ -1,6 +1,6 @@
 id: "702-3"
 domain_id: 7
-domain: "☁️ AWS 클라우드 & 인프라 보안"
+domain: "️ AWS 클라우드 & 인프라 보안"
 track_id: "702"
 track: "Track 702: AWS CLI 자격증명 & 리전 설정 오류"
 title: "AWS 임시 세션 토큰(aws_session_token) 만료 및 갱신"

@@ -1,6 +1,6 @@
 id: "101-3"
 domain_id: 1
-domain: "💾 파일시스템 & 스토리지"
+domain: " 파일시스템 & 스토리지"
 track_id: "101"
 track: "Track 101: 유령 파일 & 파일 디스크립터 누수"
 title: "Kill해도 다시 살아나는 크론(Cron) 감시 데몬 추적"

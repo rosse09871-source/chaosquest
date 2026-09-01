@@ -1,6 +1,6 @@
 id: "203-1"
 domain_id: 2
-domain: "⚙️ 프로세스 & 시스템 자원"
+domain: "️ 프로세스 & 시스템 자원"
 track_id: "203"
 track: "Track 203: CPU 100% 폭주 & 악성 데몬"
 title: "서버가 버벅거리는데 범인이 누구지? (위장된 CPU 폭주 데몬)"
