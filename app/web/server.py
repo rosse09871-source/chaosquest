@@ -61,6 +61,26 @@ def get_current_user_obj(username: str = Depends(get_current_user_name)):
         return {"id": user.id, "username": user.username, "total_score": user.total_score}
 
 
+DOMAIN_ICONS = {
+    1: "fa-solid fa-hard-drive",
+    2: "fa-solid fa-microchip",
+    3: "fa-solid fa-network-wired",
+    4: "fa-solid fa-globe",
+    5: "fa-brands fa-docker",
+    6: "fa-solid fa-database",
+    7: "fa-solid fa-shield-halved",
+}
+DOMAIN_EN_NAMES = {
+    1: "Storage & Filesystem",
+    2: "Process & OS Resources",
+    3: "Networking & DNS",
+    4: "Web Servers & Reverse Proxy",
+    5: "Docker & Container Runtime",
+    6: "Database & Cache Engine",
+    7: "Cloud & Infrastructure Security",
+}
+
+
 # -------------------------------------------------------------
 # HTML Page Routes
 # -------------------------------------------------------------
@@ -83,11 +103,17 @@ def dashboard_page(request: Request, user: dict = Depends(get_current_user_obj))
             1 for t in domain["tracks"].values() for s in t["stages"] if s.id in cleared_ids
         )
         pct = int((cleared_in_dom / total_stages) * 100) if total_stages > 0 else 0
+        clean_name = domain["name"]
+        for emo in ["💾", "⚙️", "🌐", "🚀", "🐳", "🗄️", "☁️"]:
+            clean_name = clean_name.replace(emo, "").strip()
+
         domain_summaries.append(
             {
                 "id": d_id,
-                "name": domain["name"],
-                "icon": domain["name"].split(" ")[0],
+                "code": f"DOM-0{d_id}",
+                "name": clean_name,
+                "en_name": DOMAIN_EN_NAMES.get(d_id, "Infrastructure"),
+                "icon": DOMAIN_ICONS.get(d_id, "fa-solid fa-server"),
                 "track_count": len(domain["tracks"]),
                 "total_stages": total_stages,
                 "cleared_count": cleared_in_dom,
@@ -133,6 +159,8 @@ def challenges_page(request: Request, user: dict = Depends(get_current_user_obj)
             "stats": stats,
             "catalog": catalog,
             "cleared_ids": cleared_ids,
+            "domain_icons": DOMAIN_ICONS,
+            "domain_en_names": DOMAIN_EN_NAMES,
             "docker_available": orchestrator.is_docker_available,
         },
     )

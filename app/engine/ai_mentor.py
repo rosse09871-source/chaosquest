@@ -146,7 +146,7 @@ class AIMentor:
             open_f = diagnostics.get("open_files", "")
             if "deleted" in open_f or "app_ghost" in open_f or "dump" in open_f:
                 return (
-                    "👨‍🏫 [김수석의 실시간 진단]\n\n"
+                    "[김수석의 실시간 진단]\n\n"
                     "음, 지금 컨테이너의 파일 디스크립터 상태를 봤는데 `(deleted)` 표시가 붙은 유령 파일이 아직 프로세스에 물려있네!\n\n"
                     "1. 리눅스는 `rm`으로 파일을 지워도 실행 중인 프로세스가 해당 파일을 열고 있으면 디스크 공간을 절대 반환하지 않아.\n"
                     "2. `lsof +L1` 결과에서 해당 파일을 열고 있는 PID를 확인해봐.\n"
@@ -154,9 +154,9 @@ class AIMentor:
                 )
             else:
                 return (
-                    "👨‍🏫 [김수석의 실시간 진단]\n\n"
+                    "[김수석의 실시간 진단]\n\n"
                     "좋아! 열려있던 유령 파일 디스크립터는 깔끔하게 정리된 것 같아.\n\n"
-                    "이제 `ps aux`로 데몬이 완전히 내려갔는지 확인하고, 메뉴에서 **`[3] 복구 검증 및 제출`**을 눌러서 결과를 확인해보자!"
+                    "이제 `ps aux`로 데몬이 완전히 내려갔는지 확인하고, [VERIFY & SUBMIT]을 눌러서 결과를 확인해보자!"
                 )
 
         # Domain 2: Process & Ports (201, 202, 203)
@@ -164,21 +164,21 @@ class AIMentor:
             net = diagnostics.get("network", "")
             if "80" in net or "8080" in net or "rogue" in net or "immortal" in diagnostics.get("processes", ""):
                 return (
-                    "👨‍🏫 [김수석의 실시간 진단]\n\n"
+                    "[김수석의 실시간 진단]\n\n"
                     "포트 충돌 상황이네! 지금 포트 점유 상태(`ss -tlpn`)를 보니까 비인가 좀비 프로세스가 포트를 쥐고 있어.\n\n"
                     "1. `ss -tlpn` 또는 `netstat -tlpn`으로 80번(또는 8080) 포트를 선점하고 있는 프로세스의 PID를 확인해봐.\n"
                     "2. 해당 프로세스를 `kill -9`로 종료한 다음, 정상 서비스 기동 스크립트(`/usr/local/bin/start_*.sh`)를 실행해서 포트를 다시 열어줘야 해!"
                 )
             else:
                 return (
-                    "👨‍🏫 [김수석의 실시간 진단]\n\n"
+                    "[김수석의 실시간 진단]\n\n"
                     "좀비 프로세스는 잘 사살된 것 같네! 이제 정상 서비스가 200 OK 응답을 주는지 `curl http://127.0.0.1/`로 테스트해보고 제출을 눌러봐."
                 )
 
         # Domain 3: Network (301, 302, 303)
         elif cid.startswith("301"):
             return (
-                "👨‍🏫 [김수석의 실시간 진단]\n\n"
+                "[김수석의 실시간 진단]\n\n"
                 "DNS 해석에 문제가 생겼을 때는 두 곳을 먼저 확인해야 해: `/etc/hosts`와 `/etc/resolv.conf`!\n\n"
                 "1. `cat /etc/resolv.conf`를 열어서 유효한 네임서버(예: `8.8.8.8` 또는 `1.1.1.1`)가 제대로 등록되어 있는지 확인해봐.\n"
                 "2. 만약 가짜 IP가 적혀있다면 `echo 'nameserver 8.8.8.8' > /etc/resolv.conf`로 공용 DNS를 등록해주면 바로 해결될 거야."
@@ -187,7 +187,7 @@ class AIMentor:
         # Domain 4: Nginx (401, 402, 403)
         elif cid.startswith("401"):
             return (
-                "👨‍🏫 [김수석의 실시간 진단]\n\n"
+                "[김수석의 실시간 진단]\n\n"
                 "Nginx 502 Bad Gateway는 앞단 프록시(Nginx)와 뒷단 백엔드 앱 간의 통신이 끊겼을 때 발생해.\n\n"
                 "1. 먼저 `cat /var/log/nginx/error.log`를 열어서 upstream 연결 실패 포트나 소켓 경로를 확인해봐.\n"
                 "2. 백엔드가 실제로 몇 번 포트에서 돌고 있는지 `ss -tlpn`으로 확인하고, `/etc/nginx/sites-available/default`의 `proxy_pass` 포트를 일치시킨 뒤 `nginx -s reload`를 실행해봐!"
@@ -195,13 +195,13 @@ class AIMentor:
 
         # General Fallback
         return (
-            f"👨‍🏫 [김수석의 실시간 진단]\n\n"
+            f"[김수석의 실시간 진단]\n\n"
             f"현재 다루고 있는 인시던트는 **'{challenge.title}'**이네.\n\n"
             f"증상: {challenge.incident.symptom}\n\n"
-            "💡 **사수의 3단계 조언**:\n"
+            "[사수의 3단계 조언]:\n"
             "1. 먼저 샌드박스 쉘에 들어가서 관련 로그나 설정 파일(`/etc/`, `/var/log/`)을 직접 열어봐.\n"
             "2. 에러 메시지에 나오는 핵심 키워드(권한, 포트, 파일명)를 기반으로 명령어를 실행해봐.\n"
-            "3. 작업이 끝나면 `exit`로 나와서 [3]번 메뉴로 채점을 요청해봐!"
+            "3. 작업이 끝나면 [VERIFY & SUBMIT] 버튼으로 채점을 요청해봐!"
         )
 
 

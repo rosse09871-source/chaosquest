@@ -11,15 +11,15 @@ def client():
 def test_dashboard_page(client):
     response = client.get("/")
     assert response.status_code == 200
-    assert "ChaosQuest" in response.text
-    assert "대시보드" in response.text or "진척" in response.text
+    assert "CHAOSQUEST" in response.text.upper()
+    assert "DASHBOARD" in response.text.upper() or "INCIDENT" in response.text.upper()
 
 
 def test_challenges_page(client):
     response = client.get("/challenges")
     assert response.status_code == 200
-    assert "7대 인프라 도메인" in response.text
-    assert "Domain" in response.text
+    assert "CHAOSQUEST" in response.text.upper()
+    assert "DOM-0" in response.text or "CHALLENGES" in response.text.upper()
 
 
 def test_api_catalog(client):
