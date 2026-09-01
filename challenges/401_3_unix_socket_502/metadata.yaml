@@ -1,0 +1,34 @@
+id: "401-3"
+domain_id: 4
+domain: "🚀 웹 서버 & 리버스 프록시"
+track_id: "401"
+track: "Track 401: Nginx 502 Bad Gateway"
+title: "Unix Domain Socket 권한 거부로 인한 Nginx 502 복구"
+category: "Nginx"
+difficulty: "Hard"
+base_score: 650
+target_time_seconds: 600
+
+incident:
+  reporter: "Backend Architecture Team"
+  severity: "P1-CRITICAL"
+  symptom: "FastAPI/Gunicorn 백엔드가 /tmp/app.sock 유닉스 소켓으로 통신 중이나 Nginx 에러 로그에 '13: Permission denied while connecting to upstream' 이 찍히며 502 에러가 발생합니다."
+  objective: "/tmp/app.sock 소켓 파일의 권한을 chmod 666 /tmp/app.sock 으로 변경하여 Nginx(www-data) 프로세스가 소켓에 접근할 수 있도록 복구하세요."
+
+hints:
+  - level: 1
+    cost: 50
+    text: "cat /var/log/nginx/error.log 에서 Permission denied 에러를 확인하세요."
+  - level: 2
+    cost: 50
+    text: "ls -la /tmp/app.sock 소켓 파일의 권한을 확인하세요."
+  - level: 3
+    cost: 50
+    text: "chmod 666 /tmp/app.sock 또는 chown www-data:www-data /tmp/app.sock 명령어를 실행하세요."
+
+post_mortem:
+  root_cause: "Gunicorn/uWSGI가 root umask로 Unix Domain Socket을 생성하여 www-data 권한으로 동작하는 Nginx가 소켓에 읽기/쓰기를 하지 못했습니다."
+  key_commands:
+    - "chmod 666 /tmp/app.sock"
+    - "ls -la /tmp/app.sock"
+  real_world_lesson: "TCP 포트 대신 고성능 유닉스 소켓(UDS)을 사용할 때 가장 빈번하게 발생하는 퍼미션 502 장애입니다."

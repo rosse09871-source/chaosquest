@@ -1,0 +1,34 @@
+id: "601-2"
+domain_id: 6
+domain: "🗄️ 데이터베이스 & 캐시 연동"
+track_id: "601"
+track: "Track 601: DB 파일 락 & 슬로우 쿼리 프로세스"
+title: "독점 락(Exclusive Lock)을 쥐고 있는 좀비 트랜잭션 프로세스 해제"
+category: "Database"
+difficulty: "Medium"
+base_score: 550
+target_time_seconds: 600
+
+incident:
+  reporter: "DBA Lead"
+  severity: "P1-CRITICAL"
+  symptom: "데이터베이스에 쓰기 시 'database is locked' 에러가 발생합니다. 백그라운드 프로세스가 독점 트랜잭션을 잡고 있습니다."
+  objective: "fuser 또는 lsof 로 /var/lib/data/app.db 를 잡고 있는 zombie_db_holder.py 를 찾아 kill -9 하세요."
+
+hints:
+  - level: 1
+    cost: 50
+    text: "fuser /var/lib/data/app.db 또는 lsof /var/lib/data/app.db 로 프로세스를 찾으세요."
+  - level: 2
+    cost: 50
+    text: "zombie_db_holder.py 프로세스를 kill 하세요."
+  - level: 3
+    cost: 50
+    text: "pkill -9 -f zombie_db_holder"
+
+post_mortem:
+  root_cause: "트랜잭션을 COMMIT/ROLLBACK하지 않고 무한 sleep에 빠진 애플리케이션으로 인해 DB 전체가 잠겼습니다."
+  key_commands:
+    - "fuser -k <DB파일>"
+    - "pkill -9 -f <프로세스>"
+  real_world_lesson: "실무 RDBMS의 미종료 트랜잭션으로 인한 Lock Timeout 장애 대응 기본기입니다."

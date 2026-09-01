@@ -1,0 +1,34 @@
+id: "403-2"
+domain_id: 4
+domain: "🚀 웹 서버 & 리버스 프록시"
+track_id: "403"
+track: "Track 403: 413 Request Entity Too Large & 버퍼 제한"
+title: "대용량 JWT 쿠키 헤더로 인한 Nginx 502/400 버퍼 오버플로우"
+category: "Nginx"
+difficulty: "Medium"
+base_score: 550
+target_time_seconds: 600
+
+incident:
+  reporter: "Auth Token Team"
+  severity: "P1-CRITICAL"
+  symptom: "사용자 JWT 토큰 쿠키가 8KB 이상으로 커지면서 Nginx 에러 로그에 'upstream sent too big header while reading response header' 502 에러가 발생합니다."
+  objective: "/etc/nginx/sites-available/default 의 location 블록에 proxy_buffer_size 128k; proxy_buffers 4 256k; proxy_busy_buffers_size 256k; 설정을 추가하세요."
+
+hints:
+  - level: 1
+    cost: 50
+    text: "cat /var/log/nginx/error.log 에서 'too big header' 에러를 확인하세요."
+  - level: 2
+    cost: 50
+    text: "proxy_buffer_size 128k; 설정을 추가하여 프록시 헤더 수신 버퍼를 늘리세요."
+  - level: 3
+    cost: 50
+    text: "proxy_buffer_size 128k; proxy_buffers 4 256k; 추가 후 nginx -s reload 하세요."
+
+post_mortem:
+  root_cause: "Nginx 기본 proxy_buffer_size(4k/8k) 한도를 초과하는 대용량 인증 헤더/쿠키 응답이 들어와 버퍼 오버플로우가 발생했습니다."
+  key_commands:
+    - "proxy_buffer_size 128k;"
+    - "proxy_buffers 4 256k;"
+  real_world_lesson: "OAuth2/OIDC 및 마이크로서비스 환경에서 JWT 클레임이 비대해질 때 필수적인 Nginx 튜닝 포인트입니다."

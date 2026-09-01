@@ -1,0 +1,33 @@
+id: "602-3"
+domain_id: 6
+domain: "🗄️ 데이터베이스 & 캐시 연동"
+track_id: "602"
+track: "Track 602: Redis / 캐시 바인딩 & 포트 오류"
+title: "Redis 메모리 초과(OOM command not allowed) 및 Eviction 정책 튜닝"
+category: "Database"
+difficulty: "Hard"
+base_score: 650
+target_time_seconds: 600
+
+incident:
+  reporter: "Session Storage Team"
+  severity: "P1-CRITICAL"
+  symptom: "신규 유저 로그인 시 Redis에서 'OOM command not allowed when used memory > maxmemory' 에러가 발생하며 세션 쓰기가 차단됩니다."
+  objective: "/etc/redis/redis.conf 파일에서 maxmemory-policy allkeys-lru (또는 volatile-lru)로 변경하여 오래된 키가 자동 축출되도록 튜닝하세요."
+
+hints:
+  - level: 1
+    cost: 50
+    text: "현재 maxmemory-policy 가 noeviction 으로 되어 있어 메모리가 꽉 차면 모든 쓰기를 거절합니다."
+  - level: 2
+    cost: 50
+    text: "allkeys-lru 또는 volatile-lru 정책으로 변경하세요."
+  - level: 3
+    cost: 50
+    text: "echo 'maxmemory-policy allkeys-lru' >> /etc/redis/redis.conf"
+
+post_mortem:
+  root_cause: "Redis 기본 eviction 정책이 noeviction으로 설정되어 메모리 한도 도달 시 신규 쓰기 쿼리가 OOM 에러로 거부되었습니다."
+  key_commands:
+    - "maxmemory-policy allkeys-lru"
+  real_world_lesson: "캐시 용도로 Redis를 사용할 때는 메모리 고갈에 대비해 반드시 LRU/LFU 키 축출(Eviction) 정책을 설정해야 합니다."

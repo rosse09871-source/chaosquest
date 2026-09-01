@@ -1,0 +1,34 @@
+id: "203-2"
+domain_id: 2
+domain: "⚙️ 프로세스 & 시스템 자원"
+track_id: "203"
+track: "Track 203: CPU 100% 폭주 & 악성 데몬"
+title: "커널 스레드로 위장한 악성 CPU 폭주 프로세스 추적"
+category: "Process"
+difficulty: "Medium"
+base_score: 550
+target_time_seconds: 600
+
+incident:
+  reporter: "Security Operations Center"
+  severity: "P1-CRITICAL"
+  symptom: "top 명령어에서 '[kworker/u:3-events]' 처럼 커널 워커인 척 위장하고 있는 가짜 프로세스가 CPU를 100% 소모하고 있습니다."
+  objective: "ls -l /proc/<PID>/exe 명령어로 실제 실행 파일 위치(/tmp/.kworker_fake)를 확인하고 kill -9 로 강제 종료하세요."
+
+hints:
+  - level: 1
+    cost: 50
+    text: "진짜 커널 스레드는 /proc/<PID>/exe 링크가 비어있습니다. 의심되는 프로세스의 exe 링크를 확인하세요."
+  - level: 2
+    cost: 50
+    text: "ps aux | grep kworker 로 CPU 점유율이 높은 프로세스의 PID를 찾으세요."
+  - level: 3
+    cost: 50
+    text: "kill -9 <PID> && rm -f /tmp/.kworker_fake.py"
+
+post_mortem:
+  root_cause: "지능형 악성코드가 관리자의 눈을 속이기 위해 프로세스 이름(argv[0])을 리눅스 커널 스레드명으로 조작하여 실행되었습니다."
+  key_commands:
+    - "ls -l /proc/<PID>/exe (프로세스의 실제 바이너리 경로 확인)"
+    - "kill -9 <PID>"
+  real_world_lesson: "보안 침해 시 악성코드는 시스템 데몬 이름(systemd, kworker, sshd)으로 위장하므로 /proc 디렉터리를 통한 정밀 추적이 필요합니다."

@@ -1,0 +1,34 @@
+id: "701-3"
+domain_id: 7
+domain: "☁️ AWS 클라우드 & 인프라 보안"
+track_id: "701"
+track: "Track 701: SSH 키 권한 & 인증 실패"
+title: "sshd_config 이중 인증 차단으로 인한 원격 접속 전면 잠금"
+category: "Security"
+difficulty: "Hard"
+base_score: 650
+target_time_seconds: 600
+
+incident:
+  reporter: "IAM Security Auditor"
+  severity: "P1-CRITICAL"
+  symptom: "/etc/ssh/sshd_config 에 PubkeyAuthentication no 와 PasswordAuthentication no 가 동시에 걸려 어떤 방식으로도 원격 로그인이 불가능합니다."
+  objective: "/etc/ssh/sshd_config 파일에서 PubkeyAuthentication yes 로 수정하고 sshd -t 문법 검사를 통과시키세요."
+
+hints:
+  - level: 1
+    cost: 50
+    text: "cat /etc/ssh/sshd_config 에서 PubkeyAuthentication 설정을 확인하세요."
+  - level: 2
+    cost: 50
+    text: "PubkeyAuthentication no 를 PubkeyAuthentication yes 로 변경하세요."
+  - level: 3
+    cost: 50
+    text: "sed -i 's/PubkeyAuthentication no/PubkeyAuthentication yes/' /etc/ssh/sshd_config"
+
+post_mortem:
+  root_cause: "보안 하드닝 스크립트가 패스워드 인증을 끌 때 실수로 공개키 인증까지 함께 꺼버려 SSH 서버가 전면 잠겼습니다."
+  key_commands:
+    - "PubkeyAuthentication yes (/etc/ssh/sshd_config)"
+    - "sshd -t (SSH 데몬 설정 사전 검사)"
+  real_world_lesson: "SSH 데몬 설정 변경 후 반드시 기존 세션을 유지한 채 새 창에서 로그인 테스트를 해야 하는 이유입니다."

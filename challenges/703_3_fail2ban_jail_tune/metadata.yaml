@@ -1,0 +1,34 @@
+id: "703-3"
+domain_id: 7
+domain: "☁️ AWS 클라우드 & 인프라 보안"
+track_id: "703"
+track: "Track 703: Fail2ban 침입 차단 & IP 격리 해제"
+title: "Fail2ban maxretry 과민 반응(1회 오입력 즉시 영구 차단) 튜닝"
+category: "Security"
+difficulty: "Medium"
+base_score: 550
+target_time_seconds: 600
+
+incident:
+  reporter: "Office Helpdesk"
+  severity: "P2-HIGH"
+  symptom: "개발자가 오타로 비밀번호를 딱 1번만 틀려도 24시간 동안 IP가 차단되어 업무가 마비됩니다. maxretry 설정이 너무 과민합니다."
+  objective: "/etc/fail2ban/jail.conf 에서 maxretry 를 최소 5회 이상(maxretry = 5)으로 완화하고 bantime 을 600 으로 튜닝하세요."
+
+hints:
+  - level: 1
+    cost: 50
+    text: "cat /etc/fail2ban/jail.conf 에서 maxretry 값을 확인하세요."
+  - level: 2
+    cost: 50
+    text: "maxretry = 1 로 너무 낮게 설정되어 있습니다."
+  - level: 3
+    cost: 50
+    text: "sed -i 's/maxretry = 1/maxretry = 5/' /etc/fail2ban/jail.conf"
+
+post_mortem:
+  root_cause: "보안 강화 목적으로 Fail2ban maxretry 임계치를 1회로 설정하여 정상 임직원의 사소한 오타까지 무차별 차단되었습니다."
+  key_commands:
+    - "maxretry = 5 (/etc/fail2ban/jail.conf)"
+    - "bantime = 600"
+  real_world_lesson: "보안 정책 수립 시 보안성과 사용자 편의성(임계치 튜닝) 사이의 균형을 맞추는 실무 역량입니다."

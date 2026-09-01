@@ -1,0 +1,33 @@
+id: "602-2"
+domain_id: 6
+domain: "🗄️ 데이터베이스 & 캐시 연동"
+track_id: "602"
+track: "Track 602: Redis / 캐시 바인딩 & 포트 오류"
+title: "Redis 보호 모드(Protected Mode) 차단 및 비밀번호 인증 실패"
+category: "Database"
+difficulty: "Medium"
+base_score: 550
+target_time_seconds: 600
+
+incident:
+  reporter: "Cache Cluster Guard"
+  severity: "P1-CRITICAL"
+  symptom: "외부 API 서버에서 Redis 접속 시 'DENIED Redis is running in protected mode because protected mode is enabled' 에러가 발생합니다."
+  objective: "/etc/redis/redis.conf 파일에서 protected-mode no 로 변경하거나 requirepass 를 설정하고 /usr/local/bin/start_redis_sec.sh 를 실행하세요."
+
+hints:
+  - level: 1
+    cost: 50
+    text: "cat /etc/redis/redis.conf 에서 protected-mode 설정을 확인하세요."
+  - level: 2
+    cost: 50
+    text: "protected-mode yes 로 되어 있고 바인딩이 0.0.0.0 이면 Redis가 접속을 거부합니다."
+  - level: 3
+    cost: 50
+    text: "sed -i 's/protected-mode yes/protected-mode no/' /etc/redis/redis.conf 후 /usr/local/bin/start_redis_sec.sh 실행"
+
+post_mortem:
+  root_cause: "Redis 3.2+ 버전부터 바인드 주소가 0.0.0.0이고 비밀번호가 없으면 보안 보호 모드(Protected Mode)가 작동하여 모든 외부 접속을 차단합니다."
+  key_commands:
+    - "protected-mode no (/etc/redis/redis.conf)"
+  real_world_lesson: "클라우드 VPC 내부에서 Redis를 운영할 때 바인딩 오픈 시 보호 모드 설정을 함께 조율해야 합니다."

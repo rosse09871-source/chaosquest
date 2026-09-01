@@ -2,33 +2,33 @@ id: "601-1"
 domain_id: 6
 domain: "🗄️ 데이터베이스 & 캐시 연동"
 track_id: "601"
-track: "Track 601: DB 파일 락 & 슬로우 쿼리 프로세스 정리"
-title: "DB 파일 락: database is locked 에러 복구"
+track: "Track 601: DB 파일 락 & 슬로우 쿼리 프로세스"
+title: "DB 파일 쓰기 권한 누락: attempt to write a readonly database"
 category: "Database"
-difficulty: "Medium"
-base_score: 550
+difficulty: "Easy"
+base_score: 500
 target_time_seconds: 600
 
 incident:
-  reporter: "DBA Team"
-  severity: "P1-CRITICAL"
-  symptom: "데이터베이스(/var/lib/data/app.db)에 쓰기 쿼리를 실행할 때마다 'OperationalError: database is locked' 가 발생하며 서비스가 멈췄습니다."
-  objective: "독점 락(Exclusive Lock)을 쥐고 응답하지 않는 유령 DB 트랜잭션 프로세스(zombie_db_holder.py)를 찾아 강제 종료하고 DB 락을 해제하세요."
+  reporter: "DB Operator"
+  severity: "P2-HIGH"
+  symptom: "웹서버가 DB 파일(/var/lib/data/app.db)에 INSERT 시 'attempt to write a readonly database' 에러가 발생합니다."
+  objective: "chmod 666 /var/lib/data/app.db 및 chmod 777 /var/lib/data 로 DB 파일 및 상위 디렉터리 쓰기 권한을 부여하세요."
 
 hints:
   - level: 1
     cost: 50
-    text: "lsof /var/lib/data/app.db 또는 fuser /var/lib/data/app.db 로 DB 파일을 물고 있는 프로세스를 찾으세요."
+    text: "SQLite는 DB 파일뿐만 아니라 상위 디렉터리(/var/lib/data)에도 락 파일 생성을 위한 쓰기 권한이 필요합니다."
   - level: 2
     cost: 50
-    text: "zombie_db_holder.py 프로세스가 DB 락을 쥔 채 무한 대기 중입니다."
+    text: "chmod 666 /var/lib/data/app.db && chmod 777 /var/lib/data 명령어를 실행하세요."
   - level: 3
     cost: 50
-    text: "pkill -9 -f zombie_db_holder 로 프로세스를 종료하세요."
+    text: "chown -R www-data:www-data /var/lib/data && chmod -R 775 /var/lib/data"
 
 post_mortem:
-  root_cause: "장시간 실행되는 슬로우 트랜잭션 프로세스가 커넥션을 반환하지 않고 방치되어 데이터베이스 파일 전체에 락(Lock)이 걸렸습니다."
+  root_cause: "임베디드 파일 기반 DB(SQLite)의 파일 및 상위 폴더 퍼미션이 읽기 전용(0444)으로 잠겨 있어 쓰기가 차단되었습니다."
   key_commands:
-    - "lsof /var/lib/data/app.db (파일 락 점유 프로세스 추적)"
-    - "fuser -k /var/lib/data/app.db (특정 파일 점유 프로세스 강제 사살)"
-  real_world_lesson: "실무 RDBMS(PostgreSQL/MySQL)에서 트랜잭션 미종료(Uncommitted transaction)로 인한 Table Lock 장애 대응의 기본 원리입니다."
+    - "chmod 666 /var/lib/data/app.db"
+    - "chmod 777 /var/lib/data"
+  real_world_lesson: "파일 기반 DB 사용 시 저널/WAL 파일 생성을 위해 디렉터리 쓰기 권한도 필수입니다."

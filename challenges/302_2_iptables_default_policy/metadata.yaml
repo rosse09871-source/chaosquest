@@ -1,0 +1,33 @@
+id: "302-2"
+domain_id: 3
+domain: "🌐 네트워크 & DNS & 방화벽"
+track_id: "302"
+track: "Track 302: iptables / ufw 유령 방화벽 차단"
+title: "방화벽 기본 정책(Policy)이 DROP으로 잠긴 전면 통신 차단"
+category: "Network"
+difficulty: "Easy"
+base_score: 500
+target_time_seconds: 600
+
+incident:
+  reporter: "SecOps Team"
+  severity: "P1-CRITICAL"
+  symptom: "특정 포트 룰이 없는데도 서버로 들어오는 모든 인바운드 TCP 패킷이 기본 정책에 의해 차단(DROP)되고 있습니다."
+  objective: "iptables -P INPUT ACCEPT 명령어로 INPUT 체인의 기본 정책을 ACCEPT로 변경하여 인바운드 통신을 전면 개방하세요."
+
+hints:
+  - level: 1
+    cost: 50
+    text: "iptables -L -n 으로 각 체인의 Default Policy (예: Chain INPUT (policy DROP))를 확인하세요."
+  - level: 2
+    cost: 50
+    text: "INPUT 체인의 기본 정책이 DROP으로 되어 있습니다."
+  - level: 3
+    cost: 50
+    text: "iptables -P INPUT ACCEPT 명령어를 실행하세요."
+
+post_mortem:
+  root_cause: "방화벽 스크립트가 허용 룰(Rule)을 등록하기 전에 기본 정책을 DROP으로 먼저 변경하여 모든 인바운드가 즉시 단절되었습니다."
+  key_commands:
+    - "iptables -P INPUT ACCEPT (체인 기본 정책 변경)"
+  real_world_lesson: "iptables 기본 정책 변경 시 원격 SSH 세션이 즉시 튕기는 가장 치명적인 인프라 실수 중 하나입니다."

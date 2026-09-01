@@ -1,0 +1,33 @@
+id: "502-3"
+domain_id: 5
+domain: "🐳 도커 & 컨테이너 런타임"
+track_id: "502"
+track: "Track 502: 컨테이너 환경변수 & 설정 꼬임"
+title: ".env 파일 내 특수문자/따옴표 파싱 에러로 인한 부팅 크래시"
+category: "Docker"
+difficulty: "Hard"
+base_score: 650
+target_time_seconds: 600
+
+incident:
+  reporter: "Backend Core Team"
+  severity: "P1-CRITICAL"
+  symptom: "FastAPI 애플리케이션이 /app/.env 파일을 읽어들이다가 닫히지 않은 따옴표(Unclosed quote) 파싱 에러로 크래시됩니다."
+  objective: "/app/.env 파일의 API_SECRET_KEY 줄의 닫히지 않은 따옴표를 올바르게 수정하고 /usr/local/bin/start_app_env.sh 를 실행하세요."
+
+hints:
+  - level: 1
+    cost: 50
+    text: "cat /app/.env 에서 따옴표 짝이 맞지 않는 줄을 찾으세요."
+  - level: 2
+    cost: 50
+    text: "API_SECRET_KEY=\"secret_key_without_closing_quote 줄을 수정하세요."
+  - level: 3
+    cost: 50
+    text: "API_SECRET_KEY=\"secret_key_12345\" 로 닫는 따옴표를 붙인 후 /usr/local/bin/start_app_env.sh 를 실행하세요."
+
+post_mortem:
+  root_cause: ".env 환경변수 파일에 닫는 큰따옴표(\")가 누락되어 dotenv 라이브러리가 파싱 예외를 일으켰습니다."
+  key_commands:
+    - "nano /app/.env"
+  real_world_lesson: "비밀키(Secret Key)에 특수문자나 따옴표가 포함될 때 .env 파싱 오류로 인한 컨테이너 부팅 실패 사례입니다."

@@ -1,0 +1,34 @@
+id: "403-3"
+domain_id: 4
+domain: "🚀 웹 서버 & 리버스 프록시"
+track_id: "403"
+track: "Track 403: 413 Request Entity Too Large & 버퍼 제한"
+title: "백엔드 슬로우 쿼리 처리 중 Nginx 504 Gateway Timeout 복구"
+category: "Nginx"
+difficulty: "Hard"
+base_score: 650
+target_time_seconds: 600
+
+incident:
+  reporter: "Analytics Dashboard Team"
+  severity: "P1-CRITICAL"
+  symptom: "통계 데이터 조회 API가 30초 이상 소요되는데, Nginx의 기본 60초/단축 타임아웃 때문에 10초 만에 '504 Gateway Timeout' 에러가 반환됩니다."
+  objective: "/etc/nginx/sites-available/default 에 proxy_read_timeout 120s; proxy_connect_timeout 120s; 설정을 추가하여 504 타임아웃을 해결하세요."
+
+hints:
+  - level: 1
+    cost: 50
+    text: "Nginx 에러 로그에서 'upstream timed out' 메시지를 확인하세요."
+  - level: 2
+    cost: 50
+    text: "proxy_read_timeout 120s; 지시어를 location 블록에 추가하세요."
+  - level: 3
+    cost: 50
+    text: "proxy_read_timeout 120; proxy_connect_timeout 120; 추가 후 nginx -s reload 하세요."
+
+post_mortem:
+  root_cause: "Nginx 리버스 프록시의 타임아웃 설정이 백엔드 대용량 처리 시간보다 짧게 설정되어 프록시가 먼저 연결을 끊었습니다."
+  key_commands:
+    - "proxy_read_timeout 120s;"
+    - "proxy_send_timeout 120s;"
+  real_world_lesson: "대용량 배치 조회 또는 AI 모델 추론 API 앞단에 Nginx를 둘 때 필수적인 타임아웃 파라미터 튜닝입니다."

@@ -1,0 +1,34 @@
+id: "601-3"
+domain_id: 6
+domain: "🗄️ 데이터베이스 & 캐시 연동"
+track_id: "601"
+track: "Track 601: DB 파일 락 & 슬로우 쿼리 프로세스"
+title: "손상된 WAL 저널 파일 정리 및 무결성 검사(PRAGMA integrity_check)"
+category: "Database"
+difficulty: "Hard"
+base_score: 650
+target_time_seconds: 600
+
+incident:
+  reporter: "Data Reliability Engineer"
+  severity: "P1-CRITICAL"
+  symptom: "서버 강제 재부팅 후 /var/lib/data/app.db-wal 파일이 락 상태로 남아 'disk I/O error / malformed image' 가 발생합니다."
+  objective: "sqlite3 /var/lib/data/app.db 'PRAGMA wal_checkpoint(TRUNCATE);' 또는 rm -f /var/lib/data/app.db-wal 로 저널을 정리하고 무결성을 복구하세요."
+
+hints:
+  - level: 1
+    cost: 50
+    text: "/var/lib/data/ 디렉터리에 남아있는 app.db-wal 파일을 확인하세요."
+  - level: 2
+    cost: 50
+    text: "sqlite3 /var/lib/data/app.db 'PRAGMA integrity_check;' 로 무결성을 검증하세요."
+  - level: 3
+    cost: 50
+    text: "rm -f /var/lib/data/app.db-wal /var/lib/data/app.db-shm 후 sqlite3 /var/lib/data/app.db 'VACUUM;'"
+
+post_mortem:
+  root_cause: "비정상 전원 차단으로 인해 Write-Ahead Logging(WAL) 저널 파일이 닫히지 않고 손상되어 데이터베이스 엔진이 읽기를 거부했습니다."
+  key_commands:
+    - "sqlite3 <DB> 'PRAGMA integrity_check;'"
+    - "sqlite3 <DB> 'PRAGMA wal_checkpoint(TRUNCATE);'"
+  real_world_lesson: "WAL 모드 DB에서 비정상 종료 시 저널 복구(Checkpoint/Vacuum)를 통한 데이터 구조 정상화 과정입니다."

@@ -1,0 +1,34 @@
+id: "703-2"
+domain_id: 7
+domain: "☁️ AWS 클라우드 & 인프라 보안"
+track_id: "703"
+track: "Track 703: Fail2ban 침입 차단 & IP 격리 해제"
+title: "TCP Wrapper(/etc/hosts.deny) ALL: ALL 전면 차단 해제"
+category: "Security"
+difficulty: "Easy"
+base_score: 500
+target_time_seconds: 600
+
+incident:
+  reporter: "Bastion Monitor"
+  severity: "P1-CRITICAL"
+  symptom: "TCP Wrapper 보안 설정 파일인 /etc/hosts.deny 에 'ALL: ALL' 이 등록되어 모든 TCP 서비스(SSH, Telnet 등) 접속이 즉시 리셋됩니다."
+  objective: "/etc/hosts.deny 파일에서 ALL: ALL 차단 라인을 삭제하거나 주석 처리하세요."
+
+hints:
+  - level: 1
+    cost: 50
+    text: "cat /etc/hosts.deny 파일 내용을 확인하세요."
+  - level: 2
+    cost: 50
+    text: "ALL: ALL 차단 라인이 들어가 있습니다."
+  - level: 3
+    cost: 50
+    text: "sed -i '/ALL: ALL/d' /etc/hosts.deny 또는 echo '' > /etc/hosts.deny"
+
+post_mortem:
+  root_cause: "TCP Wrapper(/etc/hosts.deny)에 과도하게 엄격한 ALL: ALL 차단 규칙이 적용되어 호스트 접속이 차단되었습니다."
+  key_commands:
+    - "cat /etc/hosts.deny"
+    - "cat /etc/hosts.allow"
+  real_world_lesson: "리눅스 전통 보안 메커니즘인 TCP Wrapper의 차단 규칙 관리 방법입니다."

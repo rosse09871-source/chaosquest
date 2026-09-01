@@ -1,0 +1,33 @@
+id: "102-2"
+domain_id: 1
+domain: "💾 파일시스템 & 스토리지"
+track_id: "102"
+track: "Track 102: Inode 고갈 & 수만 개 임시 파일 누적"
+title: "숨겨진 다단계 세션 디렉터리 Inode 추적 및 대량 삭제"
+category: "Filesystem"
+difficulty: "Medium"
+base_score: 550
+target_time_seconds: 600
+
+incident:
+  reporter: "Backend Dev Team"
+  severity: "P1-CRITICAL"
+  symptom: "서버 전체에서 No space left on device 에러가 발생합니다. 숨겨진 디렉터리 어딘가에 수만 개의 세션 파일이 누적되어 있습니다."
+  objective: "find /var -type d -exec ... 등으로 비정상적으로 파일이 많은 숨겨진 세션 디렉터리(/var/cache/.session_dumps)를 찾아 rm -rf 또는 -delete로 정리하세요."
+
+hints:
+  - level: 1
+    cost: 50
+    text: "find /var/cache -type f | wc -l 등으로 파일이 밀집된 경로를 추적하세요."
+  - level: 2
+    cost: 50
+    text: "숨겨진 디렉터리 /var/cache/.session_dumps 안에 15,000개의 파일이 들어있습니다."
+  - level: 3
+    cost: 50
+    text: "find /var/cache/.session_dumps -type f -delete 명령어로 고속 일괄 삭제하세요."
+
+post_mortem:
+  root_cause: "숨겨진 세션 덤프 디렉터리에 파일이 과도하게 쌓여 인자 길이 한계(Argument list too long)로 일반 rm * 명령이 실패할 수 있는 장애 상황입니다."
+  key_commands:
+    - "find <경로> -type f -delete (대용량 파일 고속 삭제)"
+  real_world_lesson: "파일이 수십만 개 쌓였을 때는 rm * 대신 find -delete 를 사용하는 것이 실무 표준입니다."

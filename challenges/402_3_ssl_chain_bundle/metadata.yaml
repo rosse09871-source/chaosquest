@@ -1,0 +1,33 @@
+id: "402-3"
+domain_id: 4
+domain: "🚀 웹 서버 & 리버스 프록시"
+track_id: "402"
+track: "Track 402: SSL/TLS 인증서 & HTTPS 설정"
+title: "중간 CA 인증서 체인 누락(Certificate Chain Incomplete) 복구"
+category: "Nginx"
+difficulty: "Hard"
+base_score: 650
+target_time_seconds: 600
+
+incident:
+  reporter: "Mobile App Sec Team"
+  severity: "P1-CRITICAL"
+  symptom: "서버 인증서만 등록되고 중간 CA 체인(Intermediate CA)이 합쳐지지 않아 모바일 앱과 브라우저에서 'SEC_ERROR_UNKNOWN_ISSUER' 에러가 발생합니다."
+  objective: "cat /etc/ssl/certs/server.crt /etc/ssl/certs/intermediate.crt > /etc/ssl/certs/fullchain.crt 로 전체 체인을 결합하고 Nginx 설정을 fullchain.crt 로 교체하세요."
+
+hints:
+  - level: 1
+    cost: 50
+    text: "Nginx ssl_certificate 는 서버 인증서와 중간 CA가 합쳐진 Full Chain 번들이어야 합니다."
+  - level: 2
+    cost: 50
+    text: "cat /etc/ssl/certs/server.crt /etc/ssl/certs/intermediate.crt > /etc/ssl/certs/fullchain.crt 명령어로 합치세요."
+  - level: 3
+    cost: 50
+    text: "Nginx 설정의 ssl_certificate 경로를 /etc/ssl/certs/fullchain.crt 로 수정하고 nginx -s reload 하세요."
+
+post_mortem:
+  root_cause: "CA 인증서 발급 시 cert.pem만 적용하고 intermediate CA를 결합한 fullchain.pem을 적용하지 않아 클라이언트 인증서 검증이 실패했습니다."
+  key_commands:
+    - "cat cert.crt intermediate.crt > fullchain.crt"
+  real_world_lesson: "Let's Encrypt 및 상용 SSL 인증서 설치 시 가장 빈번하게 발생하는 SSL 체인 누락 사고입니다."

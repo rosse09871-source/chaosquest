@@ -1,0 +1,34 @@
+id: "303-1"
+domain_id: 3
+domain: "🌐 네트워크 & DNS & 방화벽"
+track_id: "303"
+track: "Track 303: MTU 불일치 & 패킷 단편화 오류"
+title: "로컬호스트(Loopback / 127.0.0.1) 통신 마비 복구"
+category: "Network"
+difficulty: "Easy"
+base_score: 500
+target_time_seconds: 600
+
+incident:
+  reporter: "Local Healthchecker"
+  severity: "P1-CRITICAL"
+  symptom: "서버 내부에서 127.0.0.1 또는 localhost 로 보내는 모든 통신이 'Network is unreachable' 에러를 내며 실패합니다."
+  objective: "ip link show 로 lo 인터페이스가 DOWN 상태임을 확인하고 ip link set dev lo up 명령어로 루프백 인터페이스를 활성화하세요."
+
+hints:
+  - level: 1
+    cost: 50
+    text: "ip link show lo 또는 ifconfig lo 로 루프백 인터페이스 상태를 확인하세요."
+  - level: 2
+    cost: 50
+    text: "lo 인터페이스가 DOWN 상태로 꺼져 있습니다."
+  - level: 3
+    cost: 50
+    text: "ip link set dev lo up 또는 ifconfig lo up 명령어를 실행하세요."
+
+post_mortem:
+  root_cause: "네트워크 재설정 스크립트 오작동으로 루프백(lo) 인터페이스가 비활성화(DOWN)되어 내부 IPC 및 로컬 소켓 통신이 올스톱되었습니다."
+  key_commands:
+    - "ip link show lo (루프백 상태 확인)"
+    - "ip link set dev lo up (인터페이스 활성화)"
+  real_world_lesson: "루프백 인터페이스가 꺼지면 로컬 DB 커넥션, Redis 캐시 등 내부 통신이 모두 중단되므로 기본 점검 대상입니다."

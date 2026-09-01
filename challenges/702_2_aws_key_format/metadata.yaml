@@ -1,0 +1,33 @@
+id: "702-2"
+domain_id: 7
+domain: "☁️ AWS 클라우드 & 인프라 보안"
+track_id: "702"
+track: "Track 702: AWS CLI 자격증명 & 리전 설정 오류"
+title: "AWS Access Key ID 형식 오류 및 앞뒤 공백 제거"
+category: "Security"
+difficulty: "Easy"
+base_score: 500
+target_time_seconds: 600
+
+incident:
+  reporter: "CI/CD Deployment Bot"
+  severity: "P2-HIGH"
+  symptom: "AWS S3 동기화 작업 시 'InvalidAccessKeyId: The AWS Access Key Id you provided does not exist' 에러가 발생합니다."
+  objective: "~/.aws/credentials 파일의 aws_access_key_id 에 포함된 오타(AKIA_TYPO...)를 표준 AKIAIOSFODNN7EXAMPLE 로 복구하세요."
+
+hints:
+  - level: 1
+    cost: 50
+    text: "cat ~/.aws/credentials 에서 Access Key ID 값을 확인하세요."
+  - level: 2
+    cost: 50
+    text: "aws_access_key_id = AKIA_INVALID_KEY_ERROR 로 잘못 적혀 있습니다."
+  - level: 3
+    cost: 50
+    text: "aws_access_key_id = AKIAIOSFODNN7EXAMPLE 로 수정한 후 /usr/local/bin/check_aws_key.sh 를 실행하세요."
+
+post_mortem:
+  root_cause: "복사-붙여넣기 과정에서 AWS Access Key에 특수문자나 오타가 삽입되어 자격증명 인증이 실패했습니다."
+  key_commands:
+    - "aws configure list"
+  real_world_lesson: "AWS 키 배포 시 줄바꿈이나 공백 문자가 섞여 인증이 거부되는 현상에 대한 대처법입니다."

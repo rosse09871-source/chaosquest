@@ -1,10 +1,9 @@
 #!/bin/bash
 set -e
-DUMP_DIR="/var/cache/.session_dumps"
-mkdir -p "$DUMP_DIR"
+mkdir -p /tmp/junk_cache
 python3 -c "
 import os
-for i in range(15000):
-    with open(os.path.join('$DUMP_DIR', f'sess_{i}.tmp'), 'w') as f: f.write('0')
+for i in range(8000):
+    with open(f'/tmp/junk_cache/junk_{i}.tmp', 'w') as f: f.write('0')
 "
 echo "102-1 Sabotage completed."

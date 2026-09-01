@@ -1,0 +1,33 @@
+id: "502-1"
+domain_id: 5
+domain: "🐳 도커 & 컨테이너 런타임"
+track_id: "502"
+track: "Track 502: 컨테이너 환경변수 & 설정 꼬임"
+title: "컨테이너 실행 환경 플래그(APP_ENV) 누락 복구"
+category: "Docker"
+difficulty: "Easy"
+base_score: 500
+target_time_seconds: 600
+
+incident:
+  reporter: "Microservice Gateway"
+  severity: "P2-HIGH"
+  symptom: "컨테이너 기동 스크립트(/usr/local/bin/entrypoint.sh)가 APP_ENV 환경변수가 지정되지 않아 안전 모드로 즉시 중단됩니다."
+  objective: "/etc/environment 에 APP_ENV=production 을 추가하거나 export APP_ENV=production 후 /usr/local/bin/entrypoint.sh 를 성공시키세요."
+
+hints:
+  - level: 1
+    cost: 50
+    text: "/usr/local/bin/entrypoint.sh 스크립트를 열어 확인하세요."
+  - level: 2
+    cost: 50
+    text: "echo 'APP_ENV=production' >> /etc/environment"
+  - level: 3
+    cost: 50
+    text: "export APP_ENV=production && /usr/local/bin/entrypoint.sh"
+
+post_mortem:
+  root_cause: "컨테이너 엔트리포인트에서 필수적인 APP_ENV 환경변수가 주입되지 않았습니다."
+  key_commands:
+    - "export APP_ENV=production"
+  real_world_lesson: "도커 컨테이너 실행(docker run -e) 시 필수 환경변수 전달 누락 대응입니다."

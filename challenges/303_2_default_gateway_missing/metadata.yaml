@@ -1,0 +1,34 @@
+id: "303-2"
+domain_id: 3
+domain: "🌐 네트워크 & DNS & 방화벽"
+track_id: "303"
+track: "Track 303: MTU 불일치 & 패킷 단편화 오류"
+title: "디폴트 게이트웨이(Default Gateway) 누락으로 인한 외부 통신 단절"
+category: "Network"
+difficulty: "Medium"
+base_score: 550
+target_time_seconds: 600
+
+incident:
+  reporter: "VPC Route Guard"
+  severity: "P1-CRITICAL"
+  symptom: "동일 서브넷 통신은 되지만, 외부 공인 IP나 타 서브넷으로 나가는 모든 패킷이 'Network is unreachable' 에러와 함께 드롭됩니다."
+  objective: "ip route show 로 default gateway 라우트가 누락된 것을 확인하고 ip route add default via 172.17.0.1 (또는 게이트웨이 IP)을 복구하세요."
+
+hints:
+  - level: 1
+    cost: 50
+    text: "ip route show 또는 route -n 으로 기본 게이트웨이 라우팅 경로를 확인하세요."
+  - level: 2
+    cost: 50
+    text: "default via ... 경로가 누락되어 있습니다."
+  - level: 3
+    cost: 50
+    text: "ip route add default via 172.17.0.1 dev eth0 (또는 시스템 게이트웨이 IP)을 추가하세요."
+
+post_mortem:
+  root_cause: "라우팅 테이블 초기화 중 디폴트 게이트웨이(0.0.0.0/0) 경로가 삭제되어 외부 아웃바운드 라우팅이 불가능했습니다."
+  key_commands:
+    - "ip route show (라우팅 테이블 조회)"
+    - "ip route add default via <게이트웨이IP> (기본 라우팅 경로 추가)"
+  real_world_lesson: "네트워크 브릿지/VPC 라우팅 테이블 설정 미비 시 인스턴스가 고립되는 전형적인 라우팅 장애입니다."

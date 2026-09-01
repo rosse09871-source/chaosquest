@@ -1,0 +1,34 @@
+id: "402-2"
+domain_id: 4
+domain: "🚀 웹 서버 & 리버스 프록시"
+track_id: "402"
+track: "Track 402: SSL/TLS 인증서 & HTTPS 설정"
+title: "Nginx HTTPS 443 포트 바인딩 지시어 누락"
+category: "Nginx"
+difficulty: "Easy"
+base_score: 500
+target_time_seconds: 600
+
+incident:
+  reporter: "Web Sec Team"
+  severity: "P1-CRITICAL"
+  symptom: "SSL 인증서는 준비되었으나 Nginx 설정에 'listen 443 ssl;' 지시어가 빠져 있어 https:// 접속 시 연결이 거부됩니다."
+  objective: "/etc/nginx/sites-available/default 에 listen 443 ssl; 설정을 추가하고 nginx -s reload 하세요."
+
+hints:
+  - level: 1
+    cost: 50
+    text: "cat /etc/nginx/sites-available/default 에서 listen 지시어를 확인하세요."
+  - level: 2
+    cost: 50
+    text: "80 포트만 열려있고 443 ssl 포트 리슨 설정이 없습니다."
+  - level: 3
+    cost: 50
+    text: "listen 443 ssl default_server; 를 추가하고 service nginx restart 하세요."
+
+post_mortem:
+  root_cause: "SSL 가상호스트 블록에 443 포트 바인딩 지시어가 누락되었습니다."
+  key_commands:
+    - "listen 443 ssl;"
+    - "nginx -s reload"
+  real_world_lesson: "HTTP에서 HTTPS로 전환 시 listen 포트 변경 누락은 초보 엔지니어의 단골 실수입니다."

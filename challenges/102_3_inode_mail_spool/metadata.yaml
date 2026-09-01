@@ -1,0 +1,34 @@
+id: "102-3"
+domain_id: 1
+domain: "💾 파일시스템 & 스토리지"
+track_id: "102"
+track: "Track 102: Inode 고갈 & 수만 개 임시 파일 누적"
+title: "메일 큐(Mail Spool) 폭증으로 인한 Inode 100% 및 생성 스크립트 차단"
+category: "Filesystem"
+difficulty: "Hard"
+base_score: 650
+target_time_seconds: 600
+
+incident:
+  reporter: "Postmaster Bot"
+  severity: "P1-CRITICAL"
+  symptom: "메일 발송 실패 통지가 /var/spool/mail/dead_letters 에 초당 수십 개씩 쌓이며 Inode를 100% 고갈시키고 있으며, 생성 루프 프로세스가 계속 실행 중입니다."
+  objective: "생성 프로세스(mail_flooder.py)를 찾아 kill하고, /var/spool/mail/dead_letters 안의 누적 파일들을 모두 정리하세요."
+
+hints:
+  - level: 1
+    cost: 50
+    text: "ps aux | grep mail 로 파일을 실시간 생성 중인 데몬을 찾아 kill 하세요."
+  - level: 2
+    cost: 50
+    text: "pkill -9 -f mail_flooder.py 로 프로세스를 종료하세요."
+  - level: 3
+    cost: 50
+    text: "rm -rf /var/spool/mail/dead_letters/* 로 잔여 메일 스풀 파일을 삭제하세요."
+
+post_mortem:
+  root_cause: "오류 알림 메일 발송 루프가 발생하여 반송 메일이 메일 스풀 디렉터리에 무한히 쌓여 Inode가 폭증했습니다."
+  key_commands:
+    - "pkill -9 -f mail_flooder.py"
+    - "find /var/spool/mail/dead_letters -type f -delete"
+  real_world_lesson: "Postfix/Sendmail 등 MTA 설정 오류 시 메일 스풀 Inode 고갈은 매우 빈번한 장애 패턴입니다."

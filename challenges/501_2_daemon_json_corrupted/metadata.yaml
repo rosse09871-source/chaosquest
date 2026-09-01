@@ -1,0 +1,33 @@
+id: "501-2"
+domain_id: 5
+domain: "🐳 도커 & 컨테이너 런타임"
+track_id: "501"
+track: "Track 501: 도커 소켓 권한 & 데몬 통신 장애"
+title: "도커 데몬 설정(/etc/docker/daemon.json) 문법 오류 복구"
+category: "Docker"
+difficulty: "Medium"
+base_score: 550
+target_time_seconds: 600
+
+incident:
+  reporter: "Infra Platform Bot"
+  severity: "P1-CRITICAL"
+  symptom: "도커 엔진 로그 옵션 설정 작업 후 dockerd 데몬이 'unable to configure the Docker daemon with file /etc/docker/daemon.json' 에러로 기동 실패합니다."
+  objective: "/etc/docker/daemon.json 파일의 JSON 오타를 수정하고 /usr/local/bin/check_dockerd.sh 스크립트를 성공시키세요."
+
+hints:
+  - level: 1
+    cost: 50
+    text: "cat /etc/docker/daemon.json 으로 JSON 문법 구조를 확인하세요."
+  - level: 2
+    cost: 50
+    text: "따옴표나 중괄호 누락 여부를 확인하세요."
+  - level: 3
+    cost: 50
+    text: "echo '{\"log-driver\": \"json-file\", \"log-opts\": {\"max-size\": \"10m\"}}' > /etc/docker/daemon.json"
+
+post_mortem:
+  root_cause: "Docker 데몬 설정 파일의 JSON 문법 파손으로 인해 dockerd 초기화 프로세스가 실패했습니다."
+  key_commands:
+    - "jq . /etc/docker/daemon.json"
+  real_world_lesson: "프로덕션 도커 엔진 설정 변경 시 daemon.json JSON 유효성 검증은 필수적입니다."

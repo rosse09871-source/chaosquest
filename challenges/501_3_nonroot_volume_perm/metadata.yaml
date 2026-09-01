@@ -1,0 +1,33 @@
+id: "501-3"
+domain_id: 5
+domain: "🐳 도커 & 컨테이너 런타임"
+track_id: "501"
+track: "Track 501: 도커 소켓 권한 & 데몬 통신 장애"
+title: "비루트(Non-root UID 1000) 컨테이너 볼륨 마운트 쓰기 거부"
+category: "Docker"
+difficulty: "Hard"
+base_score: 650
+target_time_seconds: 600
+
+incident:
+  reporter: "Container SecOps"
+  severity: "P1-CRITICAL"
+  symptom: "보안 강화로 UID 1000(nodeuser)으로 실행되는 컨테이너가 호스트 마운트 볼륨 /data/app_storage 에 쓰기를 시도할 때 EACCES 권한 거부가 발생합니다."
+  objective: "chown -R 1000:1000 /data/app_storage 또는 chmod 777 /data/app_storage 로 볼륨 권한을 수정하세요."
+
+hints:
+  - level: 1
+    cost: 50
+    text: "ls -ld /data/app_storage 로 디렉터리 소유 UID를 확인하세요."
+  - level: 2
+    cost: 50
+    text: "현재 root(UID 0) 소유로 되어 있어 UID 1000 유저가 쓰기를 할 수 없습니다."
+  - level: 3
+    cost: 50
+    text: "chown -R 1000:1000 /data/app_storage && chmod 775 /data/app_storage"
+
+post_mortem:
+  root_cause: "호스트 머신의 볼륨 마운트 디렉터리 소유권과 컨테이너 내부 비루트 실행 유저(UID 1000)의 권한 불일치로 쓰기가 차단되었습니다."
+  key_commands:
+    - "chown -R 1000:1000 /data/app_storage"
+  real_world_lesson: "쿠버네티스(K8s) securityContext runAsUser 또는 Docker non-root 이미지 배포 시 가장 흔한 스토리지 장애입니다."

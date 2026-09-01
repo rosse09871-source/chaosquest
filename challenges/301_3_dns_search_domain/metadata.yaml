@@ -1,0 +1,33 @@
+id: "301-3"
+domain_id: 3
+domain: "🌐 네트워크 & DNS & 방화벽"
+track_id: "301"
+track: "Track 301: DNS 이름 풀이 실패 & 네임서버 유실"
+title: "검색 도메인(search domain) 누락으로 인한 단축 호스트명 질의 불가"
+category: "Network"
+difficulty: "Hard"
+base_score: 650
+target_time_seconds: 600
+
+incident:
+  reporter: "Microservice Ops Team"
+  severity: "P1-CRITICAL"
+  symptom: "서비스 간 통신 시 전체 FQDN(redis.internal.net)은 질의되지만 단축 호스트명(redis)으로 질의할 때 Host Not Found 에러가 발생합니다."
+  objective: "/etc/resolv.conf 파일에 'search internal.net' 검색 도메인 설정을 추가하여 단축 호스트명 해석을 정상화하세요."
+
+hints:
+  - level: 1
+    cost: 50
+    text: "리눅스에서 짧은 호스트명 뒤에 자동으로 도메인 접미사를 붙여주는 지시어는 'search' 입니다."
+  - level: 2
+    cost: 50
+    text: "cat /etc/resolv.conf 에 search 지시어가 누락되어 있습니다."
+  - level: 3
+    cost: 50
+    text: "echo 'search internal.net' >> /etc/resolv.conf 명령어로 검색 도메인을 등록하세요."
+
+post_mortem:
+  root_cause: "/etc/resolv.conf 에 search 도메인이 빠져 있어 FQDN이 아닌 단축 서비스명 조회가 실패했습니다."
+  key_commands:
+    - "search internal.net (/etc/resolv.conf 자동 도메인 접미사)"
+  real_world_lesson: "쿠버네티스(K8s) CoreDNS 또는 사내 프라이빗 도메인 환경에서 search ndots 설정 누락 시 빈번한 통신 장애 원인입니다."

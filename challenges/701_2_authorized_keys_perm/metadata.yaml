@@ -1,0 +1,34 @@
+id: "701-2"
+domain_id: 7
+domain: "☁️ AWS 클라우드 & 인프라 보안"
+track_id: "701"
+track: "Track 701: SSH 키 권한 & 인증 실패"
+title: "서버 측 ~/.ssh/authorized_keys 및 디렉터리 권한 엄격화(StrictModes)"
+category: "Security"
+difficulty: "Medium"
+base_score: 550
+target_time_seconds: 600
+
+incident:
+  reporter: "EC2 Bastion Guard"
+  severity: "P1-CRITICAL"
+  symptom: "OpenSSH 데몬의 StrictModes 보안 기능에 의해 /root/.ssh(0777) 및 authorized_keys(0666) 파일이 타인 쓰기 가능 상태로 감지되어 모든 공개키 로그인이 거부됩니다."
+  objective: "chmod 700 /root/.ssh 및 chmod 600 /root/.ssh/authorized_keys 로 권한을 축소하세요."
+
+hints:
+  - level: 1
+    cost: 50
+    text: "OpenSSH StrictModes 는 .ssh 디렉터리가 700, authorized_keys 가 600 이어야만 로그인을 허용합니다."
+  - level: 2
+    cost: 50
+    text: "chmod 700 /root/.ssh && chmod 600 /root/.ssh/authorized_keys"
+  - level: 3
+    cost: 50
+    text: "chmod 700 ~/.ssh && chmod 600 ~/.ssh/authorized_keys"
+
+post_mortem:
+  root_cause: "sshd_config의 StrictModes yes 설정 하에서 .ssh 디렉터리나 authorized_keys에 그룹/기타 사용자 쓰기 권한이 부여되어 인증이 차단되었습니다."
+  key_commands:
+    - "chmod 700 ~/.ssh"
+    - "chmod 600 ~/.ssh/authorized_keys"
+  real_world_lesson: "EC2 인스턴스에 신규 SSH 공개키를 등록할 때 권한 실수로 접속이 끊기는 가장 대표적인 보안 이슈입니다."

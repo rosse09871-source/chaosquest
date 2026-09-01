@@ -1,0 +1,33 @@
+id: "103-3"
+domain_id: 1
+domain: "💾 파일시스템 & 스토리지"
+track_id: "103"
+track: "Track 103: 권한 & 소유권 지옥 (403 Forbidden)"
+title: "sudoers 파일 권한 파손(0777) 및 문법 오류 복구"
+category: "Filesystem"
+difficulty: "Hard"
+base_score: 650
+target_time_seconds: 600
+
+incident:
+  reporter: "Security Lead"
+  severity: "P1-CRITICAL"
+  symptom: "관리자 작업 중 /etc/sudoers 파일의 권한이 0777로 잘못 변경되어 'sudo: /etc/sudoers is world writable' 에러와 함께 모든 sudo 명령이 거부됩니다."
+  objective: "/etc/sudoers 파일의 권한을 표준 보안 권한인 0440 (chmod 440 /etc/sudoers)으로 복구하세요."
+
+hints:
+  - level: 1
+    cost: 50
+    text: "리눅스 sudo 바이너리는 /etc/sudoers 파일의 권한이 0440 이 아니거나 쓰기 가능하면 보안상 실행을 거부합니다."
+  - level: 2
+    cost: 50
+    text: "stat -c '%a' /etc/sudoers 로 현재 권한을 확인하세요."
+  - level: 3
+    cost: 50
+    text: "chmod 440 /etc/sudoers 또는 chmod 0440 /etc/sudoers 명령어로 복구하세요."
+
+post_mortem:
+  root_cause: "/etc/sudoers 파일 권한이 0777(모든 사용자 쓰기 가능)로 풀려 리눅스 커널 보안 메커니즘이 sudo 명령을 전면 잠금(Lock)했습니다."
+  key_commands:
+    - "chmod 440 /etc/sudoers"
+  real_world_lesson: "sudoers 파일은 반드시 0440 읽기 전용 권한을 유지해야 하며, visudo 명령어로만 안전하게 수정해야 합니다."

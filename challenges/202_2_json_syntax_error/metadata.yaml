@@ -1,0 +1,33 @@
+id: "202-2"
+domain_id: 2
+domain: "⚙️ 프로세스 & 시스템 자원"
+track_id: "202"
+track: "Track 202: CrashLoop 무한 재시작 & 설정 에러"
+title: "JSON 설정 파일 구문 에러(Syntax Error)로 인한 서비스 기동 실패"
+category: "Process"
+difficulty: "Medium"
+base_score: 550
+target_time_seconds: 600
+
+incident:
+  reporter: "DevOps Engineer"
+  severity: "P1-CRITICAL"
+  symptom: "인증 서비스(/usr/local/bin/auth_service.py)가 /etc/auth_config.json 파일의 JSON 파싱 실패로 기동 즉시 종료됩니다."
+  objective: "/var/log/auth_service.log 에러 로그를 확인하여 /etc/auth_config.json 파일의 콤마(Trailing comma) 또는 문법 오류를 수정하고 서비스를 기동하세요."
+
+hints:
+  - level: 1
+    cost: 50
+    text: "cat /var/log/auth_service.log 로 JSONDecodeError 위치를 확인하세요."
+  - level: 2
+    cost: 50
+    text: "/etc/auth_config.json 파일 마지막 줄에 불필요한 콤마(,)가 들어가 있습니다."
+  - level: 3
+    cost: 50
+    text: "콤마를 제거하여 올바른 JSON 포맷으로 수정한 후 python3 /usr/local/bin/auth_service.py 를 실행하세요."
+
+post_mortem:
+  root_cause: "JSON 설정 파일에 후행 쉼표(Trailing Comma)가 포함되어 파서가 파싱 예외(json.decoder.JSONDecodeError)를 발생시켰습니다."
+  key_commands:
+    - "jq . /etc/auth_config.json (JSON 문법 유효성 검사)"
+  real_world_lesson: "표준 JSON 사양에서는 마지막 요소 뒤의 후행 쉼표를 허용하지 않으므로 설정 배포 시 문법 검사가 필수입니다."

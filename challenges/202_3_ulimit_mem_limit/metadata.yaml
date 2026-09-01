@@ -1,0 +1,34 @@
+id: "202-3"
+domain_id: 2
+domain: "⚙️ 프로세스 & 시스템 자원"
+track_id: "202"
+track: "Track 202: CrashLoop 무한 재시작 & 설정 에러"
+title: "최대 파일 디스크립터 한도(ulimit nofile) 부족으로 인한 CrashLoop"
+category: "Process"
+difficulty: "Hard"
+base_score: 650
+target_time_seconds: 600
+
+incident:
+  reporter: "Data Engine Team"
+  severity: "P1-CRITICAL"
+  symptom: "데이터 인덱서(indexer_daemon)가 소켓을 100개 이상 열려고 시도하다가 'OSError: [Errno 24] Too many open files' 에러를 뿜으며 비정상 종료됩니다."
+  objective: "/etc/security/limits.conf 또는 /usr/local/bin/start_indexer.sh 스크립트 내부에서 ulimit -n 65535 로 파일 디스크립터 한도를 증설하고 서비스를 정상 기동하세요."
+
+hints:
+  - level: 1
+    cost: 50
+    text: "ulimit -n 명령어로 현재 쉘의 오픈 파일 디스크립터 한도를 확인하세요."
+  - level: 2
+    cost: 50
+    text: "/usr/local/bin/start_indexer.sh 스크립트에 ulimit -n 65535 설정을 추가하세요."
+  - level: 3
+    cost: 50
+    text: "ulimit -n 65535 && /usr/local/bin/start_indexer.sh"
+
+post_mortem:
+  root_cause: "시스템 기본 오픈 파일 수(nofile) 제한이 64 등 비정상적으로 낮게 설정되어 소켓 풀 초기화 중 프로세스가 강제 크래시되었습니다."
+  key_commands:
+    - "ulimit -n (오픈 파일 제한 확인)"
+    - "ulimit -n 65535 (파일 디스크립터 한도 확장)"
+  real_world_lesson: "대용량 트래픽을 처리하는 웹 서버나 DB 인스턴스 구축 시 반드시 OS 레벨 nofile ulimit 튜닝을 수행해야 합니다."

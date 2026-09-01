@@ -1,0 +1,34 @@
+id: "702-3"
+domain_id: 7
+domain: "☁️ AWS 클라우드 & 인프라 보안"
+track_id: "702"
+track: "Track 702: AWS CLI 자격증명 & 리전 설정 오류"
+title: "AWS 임시 세션 토큰(aws_session_token) 만료 및 갱신"
+category: "Security"
+difficulty: "Hard"
+base_score: 650
+target_time_seconds: 600
+
+incident:
+  reporter: "Terraform Cloud Runner"
+  severity: "P1-CRITICAL"
+  symptom: "AWS 인프라 프로비저닝 중 'ExpiredToken: The security token included in the request is expired' 에러가 발생하며 모든 클라우드 API 호출이 거부됩니다."
+  objective: "~/.aws/credentials 파일에 새로운 유효 세션 토큰(aws_session_token = VALID_STS_SESSION_TOKEN_OK)을 등록하고 /usr/local/bin/run_terraform.sh 를 통과시키세요."
+
+hints:
+  - level: 1
+    cost: 50
+    text: "AWS STS 임시 자격증명은 aws_session_token 항목이 필수입니다."
+  - level: 2
+    cost: 50
+    text: "~/.aws/credentials 에 aws_session_token = VALID_STS_SESSION_TOKEN_OK 를 추가하세요."
+  - level: 3
+    cost: 50
+    text: "echo 'aws_session_token = VALID_STS_SESSION_TOKEN_OK' >> /root/.aws/credentials && /usr/local/bin/run_terraform.sh"
+
+post_mortem:
+  root_cause: "AssumeRole로 발급받은 임시 STS 세션 토큰의 유효시간(TTL 1시간)이 만료되어 API 게이트웨이가 요청을 거절했습니다."
+  key_commands:
+    - "aws sts get-caller-identity"
+    - "aws sts assume-role"
+  real_world_lesson: "AWS IAM Role 임시 토큰 기반 CI/CD 파이프라인에서 토큰 만료 시 자동 리프레시 로직의 중요성입니다."

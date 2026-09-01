@@ -1,0 +1,34 @@
+id: "302-3"
+domain_id: 3
+domain: "🌐 네트워크 & DNS & 방화벽"
+track_id: "302"
+track: "Track 302: iptables / ufw 유령 방화벽 차단"
+title: "NAT PREROUTING 포트 포워딩 왜곡으로 인한 트래픽 유실"
+category: "Network"
+difficulty: "Hard"
+base_score: 650
+target_time_seconds: 600
+
+incident:
+  reporter: "Edge Routing Team"
+  severity: "P1-CRITICAL"
+  symptom: "80번 포트로 들어오는 트래픽이 iptables NAT 테이블의 잘못된 PREROUTING REDIRECT 룰 때문에 존재하지 않는 9999번 포트로 리다이렉트되어 증발합니다."
+  objective: "iptables -t nat -F 또는 iptables -t nat -D PREROUTING ... 명령어로 잘못된 NAT 포워딩 룰을 삭제하세요."
+
+hints:
+  - level: 1
+    cost: 50
+    text: "일반 filter 테이블이 아닌 nat 테이블을 확인해야 합니다. iptables -t nat -L -n -v 를 실행하세요."
+  - level: 2
+    cost: 50
+    text: "PREROUTING 체인에 REDIRECT to-ports 9999 룰이 들어가 있습니다."
+  - level: 3
+    cost: 50
+    text: "iptables -t nat -F 명령어로 NAT 테이블 룰을 모두 초기화하세요."
+
+post_mortem:
+  root_cause: "iptables NAT 테이블의 잘못된 포트 리다이렉션 규칙으로 인해 80번 웹 트래픽이 엉뚱한 포트로 왜곡되었습니다."
+  key_commands:
+    - "iptables -t nat -L -n (NAT 테이블 조회)"
+    - "iptables -t nat -F (NAT 테이블 초기화)"
+  real_world_lesson: "도커 포트 바인딩(DNAT)이나 투명 프록시(Transparent Proxy) 셋업 시 NAT 테이블 꼬임으로 자주 발생하는 심화 네트워크 장애입니다."

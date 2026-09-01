@@ -1,0 +1,34 @@
+id: "301-2"
+domain_id: 3
+domain: "🌐 네트워크 & DNS & 방화벽"
+track_id: "301"
+track: "Track 301: DNS 이름 풀이 실패 & 네임서버 유실"
+title: "/etc/hosts 파일 오염(Poisoning)으로 인한 내부 API 주소 왜곡"
+category: "Network"
+difficulty: "Medium"
+base_score: 550
+target_time_seconds: 600
+
+incident:
+  reporter: "Payment Gateway Team"
+  severity: "P1-CRITICAL"
+  symptom: "결제 모듈이 api.payment.internal 로 요청을 보낼 때마다 엉뚱한 로컬 더미 IP(127.0.0.99)로 연결되어 500 에러가 터집니다."
+  objective: "/etc/hosts 파일을 열어 api.payment.internal 을 가로채고 있는 가짜 IP 매핑 줄을 삭제하거나 정상 IP(10.0.0.50)로 수정하세요."
+
+hints:
+  - level: 1
+    cost: 50
+    text: "리눅스는 DNS 질의 전 항상 /etc/hosts 파일을 최우선(Priority 1)으로 참조합니다."
+  - level: 2
+    cost: 50
+    text: "cat /etc/hosts 에서 api.payment.internal 매핑 항목을 확인하세요."
+  - level: 3
+    cost: 50
+    text: "sed -i '/api.payment.internal/d' /etc/hosts 또는 10.0.0.50 으로 수정하세요."
+
+post_mortem:
+  root_cause: "테스트용으로 로컬 /etc/hosts 에 하드코딩된 더미 IP가 배포 이미지에 잔존하여 프로덕션 DNS 라우팅을 방해했습니다."
+  key_commands:
+    - "cat /etc/hosts"
+    - "getent hosts <도메인>"
+  real_world_lesson: "로컬 테스트 시 /etc/hosts 변경 후 롤백하지 않아 발생하는 실무의 대표적인 DNS 오염 사례입니다."

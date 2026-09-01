@@ -1,0 +1,34 @@
+id: "203-3"
+domain_id: 2
+domain: "⚙️ 프로세스 & 시스템 자원"
+track_id: "203"
+track: "Track 203: CPU 100% 폭주 & 악성 데몬"
+title: "멀티코어 전체를 잠식한 포크밤(Fork) CPU 루프 일괄 사살"
+category: "Process"
+difficulty: "Hard"
+base_score: 650
+target_time_seconds: 600
+
+incident:
+  reporter: "Capacity Management Team"
+  severity: "P1-CRITICAL"
+  symptom: "서버의 모든 CPU 코어(Core 0~3)가 cpu_burner_worker 프로세스 군단에 의해 100% 점유되어 서버가 응답 불능 직전입니다."
+  objective: "pkill -9 -f cpu_burner 명령어로 CPU를 폭주시키고 있는 8개의 분신 워커 프로세스를 일괄 강제 종료하세요."
+
+hints:
+  - level: 1
+    cost: 50
+    text: "ps aux | grep cpu_burner 로 실행 중인 모든 워커 목록을 확인하세요."
+  - level: 2
+    cost: 50
+    text: "개별 kill 대신 pkill -9 -f cpu_burner 로 한 번에 날려버리세요."
+  - level: 3
+    cost: 50
+    text: "pkill -9 -f cpu_burner_worker"
+
+post_mortem:
+  root_cause: "멀티스레드/멀티프로세스 부하 테스트 스크립트가 종료되지 않고 방치되어 모든 가용 CPU 사이클을 100% 소진시켰습니다."
+  key_commands:
+    - "pkill -9 -f <패턴>"
+    - "killall -9 <이름>"
+  real_world_lesson: "멀티 프로세스 부하 폭주 시 일일이 PID를 치는 대신 pkill/killall을 활용한 신속한 대응이 서비스 다운을 막습니다."
