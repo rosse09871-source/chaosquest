@@ -55,7 +55,7 @@
                         대시보드
                     </a>
                     <a href="/challenges" class="px-3.5 py-1.5 rounded-full bg-white/10 text-white font-bold border border-white/15 transition flex items-center gap-2">
-                        <span class="w-1.5 h-1.5 rounded-full bg-indigo-400"></span> 챌린지 (63)
+                        <span class="w-1.5 h-1.5 rounded-full bg-indigo-400"></span> 챌린지 ({{ total_stages_count }})
                     </a>
                     <a href="/community" class="px-3.5 py-1.5 rounded-full text-slate-400 hover:text-white hover:bg-white/5 transition flex items-center gap-2">
                         커뮤니티
@@ -84,7 +84,7 @@
             <div class="space-y-1">
                 <div class="text-[11px] font-mono uppercase tracking-wider text-indigo-400 font-bold">인시던트 커리큘럼 맵</div>
                 <h1 class="text-xl font-bold text-white tracking-tight">
-                    7대 인프라 도메인 · 18대 장애 트랙 · 54개 실무 시나리오
+                    {{ total_domains_count }}대 인프라 도메인 · {{ total_tracks_count }}대 장애 트랙 · {{ total_stages_count }}개 실무 시나리오
                 </h1>
                 <p class="text-xs text-slate-400">
                     도메인을 클릭하여 하위 트랙과 난이도별(초급/중급/고급) 문제를 확인하고 샌드박스를 시작하세요.

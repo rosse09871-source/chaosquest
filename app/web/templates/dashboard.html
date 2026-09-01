@@ -64,7 +64,7 @@
                         <span class="w-1.5 h-1.5 rounded-full bg-indigo-400"></span> 대시보드
                     </a>
                     <a href="/challenges" class="px-3.5 py-1.5 rounded-full text-slate-400 hover:text-white hover:bg-white/5 transition flex items-center gap-2">
-                        챌린지 (63)
+                        챌린지 ({{ total_stages_count }})
                     </a>
                     <a href="/community" class="px-3.5 py-1.5 rounded-full text-slate-400 hover:text-white hover:bg-white/5 transition flex items-center gap-2">
                         커뮤니티
@@ -106,7 +106,7 @@
                         실제 프로덕션 장애를 진단하고<br>해결하는 엔지니어링 아레나
                     </h1>
                     <p class="text-slate-400 text-sm leading-relaxed max-w-xl">
-                        격리된 우분투 샌드박스에서 파일시스템, 프로세스, DNS, Nginx, Docker, DB, AWS 보안 장애를 실시간으로 조사하고 AI 시니어 사수(김수석)의 1:1 코칭을 받으세요.
+                        격리된 우분투 샌드박스에서 파일시스템, 프로세스, DNS, Nginx, Docker, DB, CI/CD 배포 장애를 실시간으로 조사하고 5단계 트러블슈팅 힌트를 통해 실무 역량을 마스터하세요.
                     </p>
                 </div>
 
@@ -128,7 +128,7 @@
                     <i class="fa-solid fa-circle-check text-emerald-400"></i>
                 </div>
                 <div class="text-2xl sm:text-3xl font-extrabold text-white font-mono">
-                    {{ "%02d" % stats.cleared_count }} <span class="text-xs text-slate-500 font-normal font-sans">/ 54개</span>
+                    {{ "%02d" % stats.cleared_count }} <span class="text-xs text-slate-500 font-normal font-sans">/ {{ total_stages_count }}개</span>
                 </div>
                 <div class="mt-2 w-full bg-slate-800 rounded-full h-1">
                     <div class="bg-emerald-400 h-1 rounded-full" style="width: {{ stats.clear_rate_percent }}%"></div>

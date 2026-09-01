@@ -79,6 +79,7 @@ DOMAIN_ICONS = {
     5: "fa-brands fa-docker",
     6: "fa-solid fa-database",
     7: "fa-solid fa-shield-halved",
+    8: "fa-solid fa-code-branch",
 }
 DOMAIN_EN_NAMES = {
     1: "Storage & Filesystem",
@@ -88,7 +89,27 @@ DOMAIN_EN_NAMES = {
     5: "Docker & Container Runtime",
     6: "Database & Cache Engine",
     7: "Cloud & Infrastructure Security",
+    8: "CI/CD & Release Pipeline",
 }
+
+
+def get_global_counts() -> Dict[str, int]:
+    catalog = get_domain_catalog()
+    total_stages = sum(sum(len(t["stages"]) for t in d["tracks"].values()) for d in catalog.values())
+    total_domains = len(catalog)
+    total_tracks = sum(len(d["tracks"]) for d in catalog.values())
+    return {
+        "total_stages_count": total_stages,
+        "total_domains_count": total_domains,
+        "total_tracks_count": total_tracks,
+    }
+
+
+# Template Globals for dynamic counts across all pages
+templates.env.globals["get_global_counts"] = get_global_counts
+templates.env.globals["total_stages_count"] = lambda: get_global_counts()["total_stages_count"]
+templates.env.globals["total_domains_count"] = lambda: get_global_counts()["total_domains_count"]
+templates.env.globals["total_tracks_count"] = lambda: get_global_counts()["total_tracks_count"]
 
 
 # -------------------------------------------------------------
@@ -98,9 +119,11 @@ DOMAIN_EN_NAMES = {
 def dashboard_page(request: Request, user: dict = Depends(get_current_user_obj)):
     """Main Executive SRE Dashboard Page."""
     catalog = get_domain_catalog()
+    counts = get_global_counts()
+    total_stages_count = counts["total_stages_count"]
     with get_db_session() as db:
         stats = crud.get_user_progress_summary(db, user["id"])
-        stats["clear_rate_percent"] = int((stats.get("cleared_count", 0) / 54) * 100) if stats else 0
+        stats["clear_rate_percent"] = int((stats.get("cleared_count", 0) / total_stages_count) * 100) if (stats and total_stages_count > 0) else 0
         leaderboard = crud.get_global_leaderboard(db, limit=10)
 
     cleared_ids = set(stats.get("cleared_stage_ids", []))
@@ -114,7 +137,7 @@ def dashboard_page(request: Request, user: dict = Depends(get_current_user_obj))
         )
         pct = int((cleared_in_dom / total_stages) * 100) if total_stages > 0 else 0
         clean_name = domain["name"]
-        for emo in ["💾", "⚙️", "🌐", "🚀", "🐳", "🗄️", "☁️"]:
+        for emo in ["💾", "⚙️", "🌐", "🚀", "🐳", "🗄️", "☁️", "🏗️"]:
             clean_name = clean_name.replace(emo, "").strip()
 
         domain_summaries.append(
@@ -123,10 +146,9 @@ def dashboard_page(request: Request, user: dict = Depends(get_current_user_obj))
                 "code": f"DOM-0{d_id}",
                 "name": clean_name,
                 "en_name": DOMAIN_EN_NAMES.get(d_id, "Infrastructure"),
-                "icon": DOMAIN_ICONS.get(d_id, "fa-solid fa-server"),
-                "track_count": len(domain["tracks"]),
+                "icon": DOMAIN_ICONS.get(d_id, "fa-solid fa-layer-group"),
                 "total_stages": total_stages,
-                "cleared_count": cleared_in_dom,
+                "cleared_stages": cleared_in_dom,
                 "percent": pct,
             }
         )
@@ -148,14 +170,16 @@ def dashboard_page(request: Request, user: dict = Depends(get_current_user_obj))
             "leaderboard": leaderboard,
             "user_rank": user_rank,
             "docker_available": orchestrator.is_docker_available,
+            **counts,
         },
     )
 
 
 @app.get("/challenges", response_class=HTMLResponse)
 def challenges_page(request: Request, user: dict = Depends(get_current_user_obj)):
-    """Dedicated 7 Domains 18 Tracks 54 Problems Matrix Explorer."""
+    """Dedicated Domains & Tracks Matrix Explorer."""
     catalog = get_domain_catalog()
+    counts = get_global_counts()
     with get_db_session() as db:
         stats = crud.get_user_progress_summary(db, user["id"])
 
@@ -172,6 +196,7 @@ def challenges_page(request: Request, user: dict = Depends(get_current_user_obj)
             "domain_icons": DOMAIN_ICONS,
             "domain_en_names": DOMAIN_EN_NAMES,
             "docker_available": orchestrator.is_docker_available,
+            **counts,
         },
     )
 
@@ -245,6 +270,7 @@ def community_page(
             "selected_mine": is_mine,
             "search_query": search or "",
             "docker_available": orchestrator.is_docker_available,
+            **get_global_counts(),
         },
     )
 
@@ -276,6 +302,7 @@ def post_detail_page(
             "post": post,
             "user_liked": user_liked,
             "docker_available": orchestrator.is_docker_available,
+            **get_global_counts(),
         },
     )
 
