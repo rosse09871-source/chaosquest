@@ -20,7 +20,6 @@
                         darkbg: '#0f172a',
                         cardbg: '#1e293b',
                         bordercolor: '#334155',
-                        brandred: '#ef4444',
                     }
                 }
             }
@@ -28,30 +27,27 @@
     </script>
     <style>
         body { font-family: 'Pretendard', sans-serif; }
+        .accordion-content { transition: max-height 0.3s ease-in-out, opacity 0.3s ease-in-out; }
     </style>
 </head>
 <body class="bg-darkbg text-slate-100 min-h-screen flex flex-col">
 
     <!-- Header Navigation -->
-    <header class="border-b border-bordercolor bg-slate-900/80 backdrop-blur sticky top-0 z-50">
+    <header class="border-b border-bordercolor bg-slate-900/90 backdrop-blur sticky top-0 z-40">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
             <div class="flex items-center space-x-3">
                 <span class="text-2xl">🚨</span>
                 <span class="text-xl font-extrabold tracking-tight bg-gradient-to-r from-red-500 via-orange-400 to-yellow-400 bg-clip-text text-transparent">ChaosQuest</span>
-                <span class="text-xs bg-slate-800 text-slate-400 px-2 py-0.5 rounded-full border border-slate-700">DevOps Arena 2.0</span>
+                <span class="text-xs bg-slate-800 text-slate-400 px-2.5 py-0.5 rounded-full border border-slate-700 font-mono">Arena 2.0</span>
                 {% if docker_available %}
                 <span class="text-xs bg-emerald-950 text-emerald-400 px-2 py-0.5 rounded-full border border-emerald-800 flex items-center gap-1">
-                    <i class="fa-brands fa-docker"></i> Docker Live
-                </span>
-                {% else %}
-                <span class="text-xs bg-yellow-950 text-yellow-400 px-2 py-0.5 rounded-full border border-yellow-800">
-                    ⚡ Simulation
+                    <i class="fa-brands fa-docker"></i> Live Sandbox
                 </span>
                 {% endif %}
             </div>
 
             <!-- User Profile / Score / Nickname -->
-            <div class="flex items-center space-x-4">
+            <div class="flex items-center space-x-3">
                 <button onclick="openLeaderboard()" class="text-xs sm:text-sm bg-slate-800 hover:bg-slate-700 text-yellow-400 font-semibold px-3 py-1.5 rounded-lg border border-slate-700 flex items-center gap-1.5 transition">
                     <i class="fa-solid fa-trophy"></i> <span>글로벌 랭킹</span>
                 </button>
@@ -61,7 +57,7 @@
                     <span class="text-xs text-yellow-400 font-mono font-bold bg-yellow-950/60 px-2 py-0.5 rounded border border-yellow-800/60">
                         {{ user.total_score }} pts
                     </span>
-                    <button onclick="promptChangeUser()" title="닉네임 변경" class="text-xs text-slate-400 hover:text-white ml-1">
+                    <button onclick="openLoginModal()" title="닉네임 변경" class="text-xs text-slate-400 hover:text-white ml-1">
                         <i class="fa-solid fa-pen-to-square"></i>
                     </button>
                 </div>
@@ -70,96 +66,109 @@
     </header>
 
     <!-- Main Container -->
-    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1 w-full">
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex-1 w-full space-y-6">
         
         <!-- Welcome Hero Banner -->
-        <div class="relative overflow-hidden rounded-2xl bg-gradient-to-r from-slate-900 via-slate-800 to-indigo-950 border border-slate-700/80 p-6 sm:p-8 mb-8 shadow-xl">
+        <div class="relative overflow-hidden rounded-2xl bg-gradient-to-r from-slate-900 via-slate-800 to-indigo-950 border border-slate-700/80 p-6 sm:p-7 shadow-xl">
             <div class="max-w-3xl relative z-10">
-                <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-red-500/10 text-red-400 border border-red-500/20 text-xs font-semibold mb-3">
+                <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-red-500/10 text-red-400 border border-red-500/20 text-xs font-semibold mb-2">
                     <i class="fa-solid fa-fire"></i> 7대 도메인 18대 트랙 54개 실전 인시던트 커리큘럼
                 </div>
-                <h1 class="text-2xl sm:text-4xl font-extrabold text-white tracking-tight mb-2">
+                <h1 class="text-xl sm:text-3xl font-extrabold text-white tracking-tight mb-2">
                     실전 인프라 장애를 직접 디버깅하고 해결하세요.
                 </h1>
-                <p class="text-slate-400 text-sm sm:text-base leading-relaxed">
-                    독립된 격리 우분투 샌드박스에서 실시간으로 장애를 조사하고, AI 시니어 사수(김수석)의 1:1 조언을 받으며 SRE/DevOps 문제 해결 능력을 완성하세요.
+                <p class="text-slate-400 text-xs sm:text-sm leading-relaxed">
+                    독립된 우분투 샌드박스에서 실시간 장애를 조사하고, AI 시니어 사수(김수석)의 1:1 코칭을 받으며 SRE/DevOps 문제 해결 능력을 완성하세요.
                 </p>
-                <div class="mt-4 flex flex-wrap gap-4 text-xs text-slate-300 font-mono">
+                <div class="mt-4 flex flex-wrap items-center gap-3 text-xs text-slate-300 font-mono">
                     <div class="bg-slate-800/80 px-3 py-1.5 rounded-lg border border-slate-700">
-                        🏆 총 해결: <span class="text-emerald-400 font-bold">{{ stats.cleared_count }} / 54</span>
+                        🏆 해결 완료: <span class="text-emerald-400 font-bold">{{ stats.cleared_count }} / 54</span>
                     </div>
                     <div class="bg-slate-800/80 px-3 py-1.5 rounded-lg border border-slate-700">
-                        ⚡ 진척률: <span class="text-cyan-400 font-bold">{{ stats.clear_rate_percent }}%</span>
+                        ⚡ 총 진척률: <span class="text-cyan-400 font-bold">{{ stats.clear_rate_percent }}%</span>
+                    </div>
+                    <div class="flex-1"></div>
+                    <div class="flex items-center gap-2">
+                        <button onclick="expandAllDomains()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 px-3 py-1.5 rounded-lg border border-slate-700 text-xs font-sans transition">
+                            <i class="fa-solid fa-angles-down mr-1"></i> 전체 펼치기
+                        </button>
+                        <button onclick="collapseAllDomains()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 px-3 py-1.5 rounded-lg border border-slate-700 text-xs font-sans transition">
+                            <i class="fa-solid fa-angles-up mr-1"></i> 전체 접기
+                        </button>
                     </div>
                 </div>
-            </div>
-            <div class="absolute -right-8 -bottom-8 opacity-10 text-9xl select-none">
-                <i class="fa-solid fa-server"></i>
             </div>
         </div>
 
-        <!-- 7 Domains Grid -->
-        <div class="space-y-6">
+        <!-- 7 Domains Dropdown Accordion List -->
+        <div class="space-y-4">
             {% for d_id, domain in catalog.items() %}
             <div class="bg-cardbg rounded-xl border border-bordercolor shadow-md overflow-hidden transition hover:border-slate-600">
                 
-                <!-- Domain Header Card -->
-                <div class="p-4 sm:p-5 bg-slate-800/50 border-b border-bordercolor flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                    <div class="flex items-center space-x-3">
+                <!-- Domain Header (Clickable Toggle) -->
+                <button type="button" onclick="toggleDomain('domain-{{ d_id }}')" class="w-full p-4 sm:p-5 bg-slate-800/60 hover:bg-slate-800 transition flex items-center justify-between text-left select-none">
+                    <div class="flex items-center space-x-3.5">
                         <span class="text-2xl">{{ domain.name.split(' ')[0] }}</span>
                         <div>
-                            <h2 class="text-lg font-bold text-white flex items-center gap-2">
-                                {{ domain.name }}
-                                <span class="text-xs font-normal text-slate-400">({{ domain.tracks|length }}개 트랙)</span>
-                            </h2>
-                        </div>
-                    </div>
-                    <div class="flex items-center space-x-2">
-                        <span class="text-xs text-slate-400 font-mono">Domain {{ d_id }}</span>
-                    </div>
-                </div>
-
-                <!-- Tracks Inside Domain -->
-                <div class="p-4 sm:p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {% for t_id, track in domain.tracks.items() %}
-                    <div class="bg-slate-900/70 rounded-lg p-4 border border-slate-800 hover:border-slate-700 flex flex-col justify-between">
-                        <div>
-                            <div class="flex items-center justify-between mb-2">
-                                <span class="text-xs font-bold text-cyan-400 font-mono">Track {{ t_id }}</span>
-                                <span class="text-xs text-slate-500">{{ track.stages|length }}개 난이도</span>
+                            <div class="flex items-center gap-2">
+                                <span class="text-xs font-bold font-mono text-cyan-400 bg-cyan-950/80 px-2 py-0.5 rounded border border-cyan-800/60">Domain {{ d_id }}</span>
+                                <h2 class="text-base sm:text-lg font-bold text-white">{{ domain.name }}</h2>
                             </div>
-                            <h3 class="font-bold text-white text-sm mb-3 line-clamp-1">{{ track.title }}</h3>
+                            <p class="text-xs text-slate-400 mt-0.5">
+                                {{ domain.tracks|length }}개 트랙 (총 {{ domain.tracks.values()|map(attribute='stages')|map('length')|sum }}개 난이도 문제)
+                            </p>
                         </div>
+                    </div>
 
-                        <!-- Sub-stages list -->
-                        <div class="space-y-2 mt-2 pt-2 border-t border-slate-800">
-                            {% for st in track.stages %}
-                            <div class="flex items-center justify-between text-xs py-1 px-2 rounded bg-slate-800/40 hover:bg-slate-800 transition">
-                                <div class="flex items-center space-x-2">
-                                    {% if st.id in cleared_ids %}
-                                    <span class="text-emerald-400 font-bold" title="해결 완료">✅</span>
-                                    {% else %}
-                                    <span class="text-slate-600 font-bold" title="미해결">⚪</span>
-                                    {% endif %}
-                                    
-                                    {% if st.difficulty == "Easy" %}
-                                    <span class="px-1.5 py-0.5 rounded text-[10px] bg-emerald-950 text-emerald-400 border border-emerald-800">Easy</span>
-                                    {% elif st.difficulty == "Medium" %}
-                                    <span class="px-1.5 py-0.5 rounded text-[10px] bg-yellow-950 text-yellow-400 border border-yellow-800">Med</span>
-                                    {% else %}
-                                    <span class="px-1.5 py-0.5 rounded text-[10px] bg-red-950 text-red-400 border border-red-800">Hard</span>
-                                    {% endif %}
+                    <div class="flex items-center space-x-4">
+                        <span class="text-xs font-mono text-slate-400 hidden sm:inline-block">클릭하여 펼치기/접기</span>
+                        <i id="icon-domain-{{ d_id }}" class="fa-solid fa-chevron-down text-slate-400 transition-transform duration-200 {% if loop.first %}rotate-180{% endif %}"></i>
+                    </div>
+                </button>
 
-                                    <span class="text-slate-300 font-medium truncate max-w-[120px]" title="{{ st.title }}">{{ st.title }}</span>
+                <!-- Tracks Inside Domain (Collapsible Body) -->
+                <div id="domain-{{ d_id }}" class="{% if not loop.first %}hidden{% endif %} p-4 sm:p-6 border-t border-bordercolor bg-slate-900/40">
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {% for t_id, track in domain.tracks.items() %}
+                        <div class="bg-slate-900/90 rounded-xl p-4 border border-slate-800 hover:border-slate-700 flex flex-col justify-between space-y-3">
+                            <div>
+                                <div class="flex items-center justify-between mb-1.5">
+                                    <span class="text-xs font-bold text-cyan-400 font-mono bg-cyan-950/60 px-2 py-0.5 rounded border border-cyan-800/40">Track {{ t_id }}</span>
+                                    <span class="text-[11px] text-slate-500 font-mono">{{ track.stages|length }} 난이도</span>
                                 </div>
-                                <a href="/play/{{ st.id }}" class="bg-indigo-600 hover:bg-indigo-500 text-white font-semibold px-2 py-1 rounded transition text-[11px] flex items-center gap-1">
-                                    도전 <i class="fa-solid fa-arrow-right text-[9px]"></i>
-                                </a>
+                                <h3 class="font-bold text-white text-sm line-clamp-1" title="{{ track.title }}">{{ track.title }}</h3>
                             </div>
-                            {% endfor %}
+
+                            <!-- Sub-stages list -->
+                            <div class="space-y-1.5 pt-2 border-t border-slate-800">
+                                {% for st in track.stages %}
+                                <div class="flex items-center justify-between text-xs py-1.5 px-2.5 rounded-lg bg-slate-800/50 hover:bg-slate-800 transition">
+                                    <div class="flex items-center space-x-2">
+                                        {% if st.id in cleared_ids %}
+                                        <span class="text-emerald-400 font-bold" title="해결 완료">✅</span>
+                                        {% else %}
+                                        <span class="text-slate-600 font-bold" title="미해결">⚪</span>
+                                        {% endif %}
+                                        
+                                        {% if st.difficulty == "Easy" %}
+                                        <span class="px-1.5 py-0.5 rounded text-[10px] bg-emerald-950 text-emerald-400 border border-emerald-800 font-semibold">Easy</span>
+                                        {% elif st.difficulty == "Medium" %}
+                                        <span class="px-1.5 py-0.5 rounded text-[10px] bg-yellow-950 text-yellow-400 border border-yellow-800 font-semibold">Med</span>
+                                        {% else %}
+                                        <span class="px-1.5 py-0.5 rounded text-[10px] bg-red-950 text-red-400 border border-red-800 font-semibold">Hard</span>
+                                        {% endif %}
+
+                                        <span class="text-slate-300 font-medium truncate max-w-[110px] sm:max-w-[130px]" title="{{ st.title }}">{{ st.title }}</span>
+                                    </div>
+                                    <a href="/play/{{ st.id }}" class="bg-indigo-600 hover:bg-indigo-500 text-white font-semibold px-2.5 py-1 rounded-md transition text-[11px] flex items-center gap-1 shadow-sm">
+                                        도전 <i class="fa-solid fa-arrow-right text-[9px]"></i>
+                                    </a>
+                                </div>
+                                {% endfor %}
+                            </div>
                         </div>
+                        {% endfor %}
                     </div>
-                    {% endfor %}
                 </div>
 
             </div>
@@ -167,6 +176,30 @@
         </div>
 
     </main>
+
+    <!-- Welcome / Guest Login Gate Modal -->
+    <div id="login-modal" class="fixed inset-0 bg-black/85 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-cardbg border border-indigo-500/50 rounded-2xl max-w-md w-full p-6 sm:p-8 shadow-2xl relative space-y-5">
+            <div class="text-center space-y-2">
+                <div class="inline-flex p-3 rounded-2xl bg-indigo-500/20 text-indigo-400 text-3xl mb-1">
+                    <i class="fa-solid fa-user-astronaut"></i>
+                </div>
+                <h2 class="text-2xl font-extrabold text-white">엔지니어 등록</h2>
+                <p class="text-xs text-slate-400">ChaosQuest 아레나에서 사용할 닉네임을 입력하세요.</p>
+            </div>
+
+            <div class="space-y-3">
+                <label class="block text-xs font-bold text-slate-300 uppercase font-mono">엔지니어 닉네임</label>
+                <input id="login-input" type="text" placeholder="예: srekim, cloud_master, hero" 
+                    onkeydown="if(event.key === 'Enter') submitLogin()"
+                    class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition">
+            </div>
+
+            <button onclick="submitLogin()" class="w-full py-3 bg-gradient-to-r from-indigo-600 to-cyan-600 hover:from-indigo-500 hover:to-cyan-500 text-white font-bold rounded-xl text-sm transition flex items-center justify-center gap-2 shadow-lg shadow-indigo-950/50">
+                <span>🎮 트러블슈팅 도전 시작하기</span> <i class="fa-solid fa-arrow-right"></i>
+            </button>
+        </div>
+    </div>
 
     <!-- Global Leaderboard Modal -->
     <div id="leaderboard-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
@@ -214,27 +247,81 @@
         </div>
     </div>
 
-    <!-- Login / Username Change Modal -->
+    <!-- Scripts: Accordion Toggle, Login Gate, Leaderboard -->
     <script>
+        // Accordion Toggle
+        function toggleDomain(id) {
+            const el = document.getElementById(id);
+            const icon = document.getElementById('icon-' + id);
+            if (el.classList.contains('hidden')) {
+                el.classList.remove('hidden');
+                icon.classList.add('rotate-180');
+            } else {
+                el.classList.add('hidden');
+                icon.classList.remove('rotate-180');
+            }
+        }
+
+        function expandAllDomains() {
+            document.querySelectorAll('[id^="domain-"]').forEach(el => {
+                el.classList.remove('hidden');
+                const icon = document.getElementById('icon-' + el.id);
+                if (icon) icon.classList.add('rotate-180');
+            });
+        }
+
+        function collapseAllDomains() {
+            document.querySelectorAll('[id^="domain-"]').forEach(el => {
+                el.classList.add('hidden');
+                const icon = document.getElementById('icon-' + el.id);
+                if (icon) icon.classList.remove('rotate-180');
+            });
+        }
+
+        // Leaderboard Modal
         function openLeaderboard() {
             document.getElementById('leaderboard-modal').classList.remove('hidden');
         }
         function closeLeaderboard() {
             document.getElementById('leaderboard-modal').classList.add('hidden');
         }
-        async function promptChangeUser() {
-            const newName = prompt("변경할 엔지니어 닉네임을 입력하세요:", document.getElementById('user-display').innerText);
-            if (newName && newName.trim()) {
-                const res = await fetch('/api/user/login', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ username: newName.trim() })
-                });
-                if (res.ok) {
-                    window.location.reload();
-                }
+
+        // Login Gate Modal
+        function openLoginModal() {
+            document.getElementById('login-modal').classList.remove('hidden');
+            const input = document.getElementById('login-input');
+            input.value = document.getElementById('user-display').innerText === 'Guest_Engineer' ? '' : document.getElementById('user-display').innerText;
+            setTimeout(() => input.focus(), 100);
+        }
+
+        async function submitLogin() {
+            const input = document.getElementById('login-input');
+            const username = input.value.trim();
+            if (!username) {
+                alert("닉네임을 입력해 주세요!");
+                return;
+            }
+
+            const res = await fetch('/api/user/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username: username })
+            });
+
+            if (res.ok) {
+                localStorage.setItem('chaos_user_registered', 'true');
+                window.location.reload();
             }
         }
+
+        // Show login modal automatically if first time guest
+        window.addEventListener('DOMContentLoaded', () => {
+            const currentName = "{{ user.username }}";
+            const isRegistered = localStorage.getItem('chaos_user_registered');
+            if (currentName === "Guest_Engineer" && !isRegistered) {
+                openLoginModal();
+            }
+        });
     </script>
 </body>
 </html>
