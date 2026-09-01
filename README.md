@@ -1,48 +1,52 @@
 # 🚨 ChaosQuest
 
-> **"클라우드 위에서 즐기는 리눅스/인프라 트러블슈팅 방탈출 게임 & 학습 플랫폼"**
+> **"클라우드 위에서 즐기는 실전 리눅스/인프라 트러블슈팅 아레나 & 학습 플랫폼"**
 
-ChaosQuest는 실제 현업에서 발생하는 리눅스, 네트워크, 웹 서버, 데이터베이스, 보안 장애 시나리오를 직접 조사하고 복구하는 인터랙티브 터미널 TUI 게임 & 교육 플랫폼입니다.
-
----
-
-## 🏗️ 아키텍처 개요
-- **Terminal UI**: Python `Textual` & `Rich` 기반 고성능 터미널 그래픽 인터페이스
-- **Isolation Sandbox**: Docker 컨테이너를 통한 사용자별/스테이지별 안전 격리 환경
-- **Persistence & Scoring**: SQLAlchemy ORM (SQLite / PostgreSQL) 기반 전적 및 타임어택 랭킹 기록
-- **Access Portal**: SSH Restricted Shell (`ssh play@...`) 및 Web TTY (`ttyd` + Nginx SSL)
+ChaosQuest는 실제 현업에서 발생하는 리눅스 커널, 프로세스, 네트워크, Nginx, Docker, 데이터베이스, AWS 보안 장애를 재현하고, 독립된 격리 샌드박스에서 직접 해결하는 **인터랙티브 터미널 게임 & 교육 플랫폼**입니다.
 
 ---
 
-## 🚀 빠른 시작 (Local Quickstart)
+## 🏛️ 7대 도메인 18대 트랙 (54개 실무 문제 풀)
 
-### 1. 가상환경 생성 및 의존성 설치
+```text
+🏛️ ChaosQuest 54개 실전 인시던트 커리큘럼
+├─ 💾 [도메인 1] 파일시스템 & 스토리지 (Track 101 ~ 103 : 9문제)
+├─ ⚙️ [도메인 2] 프로세스 & 시스템 자원 (Track 201 ~ 203 : 9문제)
+├─ 🌐 [도메인 3] 네트워크 & DNS & 방화벽 (Track 301 ~ 303 : 9문제)
+├─ 🚀 [도메인 4] 웹 서버 & 리버스 프록시 (Track 401 ~ 403 : 9문제)
+├─ 🐳 [도메인 5] 도커 & 컨테이너 런타임 (Track 501 ~ 502 : 6문제)
+├─ 🗄️ [도메인 6] 데이터베이스 & 캐시 연동 (Track 601 ~ 602 : 6문제)
+└─ ☁️ [도메인 7] AWS 클라우드 & 인프라 보안 (Track 701 ~ 703 : 9문제)
+```
+
+모든 트랙은 **`[Easy]` ➡️ `[Medium]` ➡️ `[Hard]`** 3단계 난이도로 구성되어 있습니다.
+
+---
+
+## 🚀 빠른 시작 (Quickstart)
+
+### 로컬 실행
 ```bash
+# 1. 가상환경 생성 및 의존성 설치
 python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
-```
 
-### 2. 데이터베이스 초기화 및 테스트 실행
-```bash
+# 2. 테스트 실행
 pytest tests/
+
+# 3. 게임 실행
+python -m app.main
 ```
 
-### 3. 게임 실행
+### AWS EC2 1-클릭 배포
 ```bash
-python -m app.main
+git clone https://github.com/rosse09871-source/chaosquest.git
+cd chaosquest && bash deploy/setup_ec2.sh
+bash deploy/launch_web.sh
 ```
 
 ---
 
-## 📂 프로젝트 구조
-```text
-chaosquest/
-├── app/
-│   ├── database/       # DB 모델, 커넥션, CRUD 쿼리
-│   ├── engine/         # Docker 컨테이너 및 세션 오케스트레이션
-│   └── ui/             # Textual/Rich TUI 컴포넌트
-├── challenges/         # 스테이지별 고장 주입 및 채점 스크립트
-├── deploy/             # AWS EC2 및 Nginx/SSH 배포 스크립트
-└── tests/              # 단위 테스트
-```
+## 📖 시스템 아키텍처 및 동작 원리
+자세한 시스템 아키텍처, 도커 샌드박스 라이프사이클, 세션 워치독, 데이터베이스 스키마는 **[ARCHITECTURE.md](ARCHITECTURE.md)** 문서를 참조하세요.
