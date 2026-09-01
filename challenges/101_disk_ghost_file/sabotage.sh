@@ -1,38 +1,47 @@
 #!/bin/bash
 set -e
 
-# Install needed tools if not present
 apt-get update -qq >/dev/null 2>&1 || true
 apt-get install -y -qq lsof procps python3 >/dev/null 2>&1 || true
 
-# Create a rogue background process holding a deleted file
+# Create a true detached background daemon using Unix double-fork
 cat << 'PYEOF' > /usr/local/bin/legacy_logger.py
-import time
 import os
+import sys
+import time
 
+# 1. First fork (detaches from parent)
+if os.fork() > 0:
+    sys.exit(0)
+
+# 2. Create new session and become session leader
+os.setsid()
+
+# 3. Second fork (prevents acquiring a controlling terminal)
+if os.fork() > 0:
+    sys.exit(0)
+
+# 4. Reparented to PID 1: Open file descriptor and delete file
 filepath = "/var/log/app_ghost.log"
-with open(filepath, "w") as f:
-    # Write some initial padding
-    for i in range(1000):
-        f.write(f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] Critical trace dump payload chunk {i}...\n")
+f = open(filepath, "w")
+for i in range(500):
+    f.write(f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] Dump payload chunk {i}...\n")
+f.flush()
+
+# Delete file name from filesystem (unlinked open FD)
+if os.path.exists(filepath):
+    os.unlink(filepath)
+
+# Keep writing and holding file descriptor open forever
+while True:
+    f.write(f"Heartbeat tick: {time.time()}\n")
     f.flush()
-    # Keep holding the file descriptor open forever
-    while True:
-        f.write(f"Heartbeat tick: {time.time()}\n")
-        f.flush()
-        time.sleep(2)
+    time.sleep(1)
 PYEOF
 
 chmod +x /usr/local/bin/legacy_logger.py
 
-# Launch the rogue process in background
-nohup python3 /usr/local/bin/legacy_logger.py >/dev/null 2>&1 &
-ROGUE_PID=$!
+# Execute python daemon
+python3 /usr/local/bin/legacy_logger.py
 
-# Wait for file creation
-sleep 1
-
-# Delete the file from filesystem (creating unlinked open file descriptor)
-rm -f /var/log/app_ghost.log
-
-echo "Stage 101 Sabotage completed. Ghost process PID: $ROGUE_PID"
+echo "Stage 101 Sabotage completed. Ghost daemon is now running in background."
