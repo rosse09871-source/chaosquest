@@ -1,5 +1,5 @@
 from datetime import datetime, timezone
-from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, Text
+from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, Text, Boolean
 from sqlalchemy.orm import relationship
 from app.database.connection import Base
 
@@ -13,6 +13,7 @@ class User(Base):
 
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     username = Column(String(64), unique=True, index=True, nullable=False)
+    is_admin = Column(Boolean, default=False, nullable=False)
     total_score = Column(Integer, default=0, nullable=False)
     created_at = Column(DateTime, default=utc_now, nullable=False)
     last_active_at = Column(DateTime, default=utc_now, onupdate=utc_now, nullable=False)

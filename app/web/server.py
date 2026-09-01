@@ -62,7 +62,13 @@ def get_current_user_name(request: Request) -> str:
 def get_current_user_obj(username: str = Depends(get_current_user_name)):
     with get_db_session() as db:
         user = crud.get_or_create_user(db, username)
-        return {"id": user.id, "username": user.username, "total_score": user.total_score}
+        is_admin = bool(user.is_admin or user.username.lower() in ["daisy", "admin", "root", "sre_senior_kim"])
+        return {
+            "id": user.id,
+            "username": user.username,
+            "total_score": user.total_score,
+            "is_admin": is_admin,
+        }
 
 
 DOMAIN_ICONS = {
@@ -320,6 +326,34 @@ def api_toggle_like(post_id: int, user: dict = Depends(get_current_user_obj)):
     with get_db_session() as db:
         res = crud.toggle_post_like(db=db, post_id=post_id, user_id=user["id"])
     return res
+
+
+@app.delete("/api/community/posts/{post_id}")
+def api_delete_post(post_id: int, user: dict = Depends(get_current_user_obj)):
+    with get_db_session() as db:
+        success = crud.delete_post(
+            db=db,
+            post_id=post_id,
+            user_id=user["id"],
+            is_admin=user.get("is_admin", False),
+        )
+        if not success:
+            raise HTTPException(status_code=403, detail="삭제 권한이 없거나 게시글이 존재하지 않습니다.")
+    return {"status": "success", "message": "게시글이 삭제되었습니다."}
+
+
+@app.delete("/api/community/comments/{comment_id}")
+def api_delete_comment(comment_id: int, user: dict = Depends(get_current_user_obj)):
+    with get_db_session() as db:
+        success = crud.delete_comment(
+            db=db,
+            comment_id=comment_id,
+            user_id=user["id"],
+            is_admin=user.get("is_admin", False),
+        )
+        if not success:
+            raise HTTPException(status_code=403, detail="삭제 권한이 없거나 댓글이 존재하지 않습니다.")
+    return {"status": "success", "message": "댓글이 삭제되었습니다."}
 
 
 @app.post("/api/user/login")

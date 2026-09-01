@@ -13,11 +13,14 @@ def get_or_create_user(db: Session, username: str) -> User:
     """Finds an existing user by username or creates a new one."""
     clean_username = username.strip()
     user = db.query(User).filter(User.username == clean_username).first()
+    is_admin_user = clean_username.lower() in ["daisy", "admin", "sre_senior_kim"]
     if not user:
-        user = User(username=clean_username)
+        user = User(username=clean_username, is_admin=is_admin_user)
         db.add(user)
         db.flush()
     else:
+        if is_admin_user and not user.is_admin:
+            user.is_admin = True
         user.last_active_at = utc_now()
     return user
 
@@ -393,6 +396,30 @@ def toggle_post_like(db: Session, post_id: int, user_id: int) -> Dict[str, Any]:
 
     db.flush()
     return {"status": "success", "liked": liked, "like_count": post.like_count}
+
+
+def delete_post(db: Session, post_id: int, user_id: int, is_admin: bool = False) -> bool:
+    """Deletes a post if the requesting user is the author or an admin."""
+    post = db.query(Post).filter(Post.id == post_id).first()
+    if not post:
+        return False
+    if post.user_id != user_id and not is_admin:
+        return False
+    db.delete(post)
+    db.flush()
+    return True
+
+
+def delete_comment(db: Session, comment_id: int, user_id: int, is_admin: bool = False) -> bool:
+    """Deletes a comment if the requesting user is the author or an admin."""
+    comment = db.query(Comment).filter(Comment.id == comment_id).first()
+    if not comment:
+        return False
+    if comment.user_id != user_id and not is_admin:
+        return False
+    db.delete(comment)
+    db.flush()
+    return True
 
 
 def seed_initial_community_posts(db: Session):

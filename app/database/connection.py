@@ -14,11 +14,22 @@ engine = create_engine(DATABASE_URL, echo=False, connect_args=connect_args)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, expire_on_commit=False, bind=engine)
 
 
+from sqlalchemy import text
+
+
 def init_db():
     """Initializes the database by creating all declared tables."""
     # Import models here to ensure they are registered with Base.metadata
     from app.database import models  # noqa: F401
     Base.metadata.create_all(bind=engine)
+
+    # Auto-migration for SQLite schema updates
+    with engine.connect() as conn:
+        try:
+            conn.execute(text("ALTER TABLE users ADD COLUMN is_admin BOOLEAN DEFAULT 0"))
+            conn.commit()
+        except Exception:
+            pass
 
 
 @contextmanager

@@ -114,3 +114,12 @@ def test_community_flow(client):
     data_like = res_like.json()
     assert data_like["status"] == "success"
     assert data_like["like_count"] == 1
+
+    # 6. Delete comment
+    comment_id = data_comment["comment_id"]
+    res_del_comment = client.delete(f"/api/community/comments/{comment_id}")
+    assert res_del_comment.status_code == 200
+
+    # 7. Delete post
+    res_del_post = client.delete(f"/api/community/posts/{post_id}")
+    assert res_del_post.status_code == 200

@@ -210,6 +210,9 @@
                 <div class="flex items-center justify-between text-[11px] text-slate-500 pt-2 border-t border-borderline">
                     <div class="flex items-center space-x-2">
                         <span class="font-semibold text-slate-300 font-sans">{{ post.user.username }}</span>
+                        {% if post.user.is_admin or post.user.username.lower() in ['daisy', 'admin', 'root', 'sre_senior_kim'] %}
+                        <span class="text-[9px] font-mono px-1.5 py-0.5 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/30">ADMIN</span>
+                        {% endif %}
                         <span>·</span>
                         <span class="font-mono text-indigo-400">{{ post.user.total_score }} 점</span>
                     </div>
