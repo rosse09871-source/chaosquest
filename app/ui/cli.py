@@ -14,11 +14,13 @@ from app.database import crud, models
 from app.engine.stage_loader import load_all_challenge_metadata, sync_challenges_to_db, get_challenge, get_domain_catalog
 from app.engine.orchestrator import DockerOrchestrator
 from app.engine.watchdog import prune_expired_sessions
+from app.engine.ai_mentor import ai_mentor
 from app.ui.components import (
     render_banner,
     render_incident_ticket,
     render_post_mortem,
     render_leaderboard_table,
+    render_ai_mentor_dialogue,
 )
 
 console = Console()
@@ -264,9 +266,10 @@ class ChaosQuestApp:
                 menu_table.add_row("[0]", "🔙 뒤로 가기")
             else:
                 menu_table.add_row("[1]", "💻 샌드박스 터미널 내부 접속 (Shell Enter)")
-                menu_table.add_row("[2]", f"💡 힌트 보기 ({attempt.hints_used}/{len(challenge.hints)}개 확인됨)")
-                menu_table.add_row("[3]", "🔍 복구 검증 및 제출 (Check & Submit)")
-                menu_table.add_row("[4]", "⚠️ 인시던트 리셋 / 포기 (Reset Sandbox)")
+                menu_table.add_row("[2]", f"💡 단계별 힌트 보기 ({attempt.hints_used}/{len(challenge.hints)}개 확인됨)")
+                menu_table.add_row("[3]", "🤖 AI 시니어 사수 1:1 SOS 요청 (AI Mentor)")
+                menu_table.add_row("[4]", "🔍 복구 검증 및 제출 (Check & Submit)")
+                menu_table.add_row("[5]", "⚠️ 인시던트 리셋 / 포기 (Reset Sandbox)")
                 menu_table.add_row("[0]", "🔙 뒤로 가기")
 
             console.print(Panel(menu_table, title="[bold white]ACTION MENU[/]", border_style="yellow"))
@@ -288,11 +291,46 @@ class ChaosQuestApp:
                 elif action == "2":
                     self._show_hint_action(challenge, attempt)
                 elif action == "3":
+                    self._ask_ai_mentor_action(challenge, attempt)
+                elif action == "4":
                     cleared = self._verify_stage_action(challenge, attempt)
                     if cleared:
                         break
-                elif action == "4":
+                elif action == "5":
                     self._reset_stage_action(stage_id, attempt)
+
+    def _ask_ai_mentor_action(self, challenge, attempt):
+        """Captures container diagnostics and provides 1:1 SRE mentor feedback."""
+        console.clear()
+        stats = self._get_user_stats()
+        render_banner(username=self.username, score=stats.get("total_score", 0), cleared_count=stats.get("cleared_count", 0), docker_active=orchestrator.is_docker_available)
+        
+        console.print(Panel(
+            "[bold white]👨‍🏫 15년 차 시니어 SRE 리드 [bold yellow]김수석[/]이 당신의 샌드박스 상태를 1:1로 진단해 드립니다.[/]\n"
+            "[dim]궁금한 점이나 막히는 상황을 자유롭게 물어보세요. (그냥 엔터만 치면 시스템 종합 진단을 제공합니다)[/]",
+            title="🤖 [bold magenta]AI SRE 시니어 사수 핫라인[/]",
+            border_style="magenta",
+            padding=(1, 2)
+        ))
+
+        user_q = Prompt.ask("\n[bold yellow]👉 사수에게 물어볼 내용을 입력하세요[/]", default="").strip()
+
+        with console.status("[bold magenta]🔍 김수석이 컨테이너의 실시간 프로세스, 포트, 디스크, 로그를 정밀 스캔 중입니다...[/]"):
+            container = None
+            if orchestrator.is_docker_available and orchestrator._client:
+                try:
+                    container_name = orchestrator._get_container_name(challenge.id, attempt.session_id)
+                    container = orchestrator._client.containers.get(container_name)
+                except Exception:
+                    container = None
+
+            diagnostics = ai_mentor.capture_diagnostics(container)
+            advice = ai_mentor.consult(challenge, diagnostics, user_question=user_q)
+
+        console.clear()
+        render_banner(username=self.username, score=stats.get("total_score", 0), cleared_count=stats.get("cleared_count", 0), docker_active=orchestrator.is_docker_available)
+        render_ai_mentor_dialogue(user_question=user_q, mentor_advice=advice)
+        Prompt.ask("\n[bold cyan]엔터를 누르면 인시던트 화면으로 돌아갑니다[/]")
 
     def _start_stage_action(self, stage_id: str):
         console.print("\n[bold cyan]⚙️ 격리된 샌드박스 컨테이너를 생성하고 고장을 주입하는 중...[/]")

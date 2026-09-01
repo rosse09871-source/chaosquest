@@ -111,3 +111,22 @@ def render_leaderboard_table(leaderboard_data: list, title: str = "🏆 GLOBAL L
             )
 
     console.print(Panel(table, border_style="yellow", padding=(0, 1)))
+
+
+def render_ai_mentor_dialogue(user_question: str, mentor_advice: str):
+    """Renders the AI Senior Engineer (김수석) 1:1 dialogue panel."""
+    content = Table.grid(padding=(1, 1))
+    content.add_column(style="white")
+
+    if user_question:
+        content.add_row(f"[bold cyan]🧑‍💻 후배 엔지니어:[/] [italic bright_white]\"{user_question}\"[/]\n")
+
+    content.add_row(f"[bold yellow]👨‍🏫 시니어 SRE 사수 (김수석):[/]\n{mentor_advice}")
+
+    panel = Panel(
+        content,
+        title="🤖 [bold magenta]AI SRE 시니어 사수 1:1 SOS 핫라인[/]",
+        border_style="magenta",
+        padding=(1, 2),
+    )
+    console.print(panel)
