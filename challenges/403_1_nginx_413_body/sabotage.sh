@@ -1,7 +1,6 @@
 #!/bin/bash
 set -e
-apt-get update -qq >/dev/null 2>&1 || true
-apt-get install -y -qq nginx curl >/dev/null 2>&1 || true
+which nginx >/dev/null 2>&1 || { apt-get update -qq >/dev/null 2>&1 || true ; apt-get install -y -qq nginx curl >/dev/null 2>&1 || true ; }
 
 cat << 'NGINXEOF' > /etc/nginx/sites-available/default
 server {

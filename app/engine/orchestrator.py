@@ -37,7 +37,7 @@ def find_docker_executable() -> Optional[str]:
 
 
 class DockerOrchestrator:
-    def __init__(self, base_image: str = "ubuntu:22.04"):
+    def __init__(self, base_image: str = "chaosquest:base"):
         self.base_image = base_image
         self._client: Optional[docker.DockerClient] = None
         self._docker_available = False
@@ -56,6 +56,16 @@ class DockerOrchestrator:
     @property
     def is_docker_available(self) -> bool:
         return self._docker_available
+
+    def _get_effective_image(self) -> str:
+        """Returns chaosquest:base if present locally, otherwise falls back to ubuntu:22.04."""
+        if not self._client or not self._docker_available:
+            return self.base_image
+        try:
+            self._client.images.get(self.base_image)
+            return self.base_image
+        except Exception:
+            return "ubuntu:22.04"
 
     def _get_container_name(self, stage_id: str, session_id: str) -> str:
         return f"chaos_{stage_id}_{session_id}"
@@ -92,10 +102,13 @@ class DockerOrchestrator:
             "created_at": str(time.time()),
         }
 
+        target_image = self._get_effective_image()
+
         try:
             container = self._client.containers.run(
-                image=self.base_image,
+                image=target_image,
                 name=container_name,
+                hostname=f"chaos-{stage_id}",
                 detach=True,
                 tty=True,
                 stdin_open=True,

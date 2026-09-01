@@ -1,7 +1,6 @@
 #!/bin/bash
 set -e
-apt-get update -qq >/dev/null 2>&1 || true
-apt-get install -y -qq lsof procps python3 cron >/dev/null 2>&1 || true
+which lsof >/dev/null 2>&1 || { apt-get update -qq >/dev/null 2>&1 || true ; apt-get install -y -qq lsof procps python3 cron >/dev/null 2>&1 || true ; }
 
 cat << 'PYEOF' > /usr/local/bin/ghost_spawner.py
 import os, sys, time

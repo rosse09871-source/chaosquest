@@ -1,7 +1,6 @@
 #!/bin/bash
 set -e
-apt-get update -qq >/dev/null 2>&1 || true
-apt-get install -y -qq procps net-tools python3 curl >/dev/null 2>&1 || true
+which procps >/dev/null 2>&1 || { apt-get update -qq >/dev/null 2>&1 || true ; apt-get install -y -qq procps net-tools python3 curl >/dev/null 2>&1 || true ; }
 
 cat << 'PYEOF' > /usr/local/bin/rogue_api.py
 import os, sys

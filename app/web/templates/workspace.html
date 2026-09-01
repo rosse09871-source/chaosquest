@@ -233,8 +233,19 @@
                 </div>
                 <span class="text-[10px] text-slate-500 uppercase tracking-wider">LIVE PTY</span>
             </div>
-            <!-- Terminal Mount Point -->
-            <div id="terminal" class="flex-1 p-3 bg-void"></div>
+            <!-- Terminal Mount Point & Loading State -->
+            <div class="flex-1 relative bg-void">
+                <div id="terminal-loading" class="absolute inset-0 z-20 flex flex-col items-center justify-center bg-void/90 gap-3 text-xs font-mono text-slate-400">
+                    <div class="w-8 h-8 rounded-full border-2 border-indigo-500/30 border-t-indigo-500 animate-spin"></div>
+                    <div class="flex items-center gap-2">
+                        <span class="text-slate-300 font-sans font-semibold">샌드박스 격리 환경 준비 및 PTY 스트림 연결 중...</span>
+                    </div>
+                    <div class="text-[10px] text-slate-500">
+                        준비 완료 시 타이머는 [00:00 대기] 상태를 유지합니다.
+                    </div>
+                </div>
+                <div id="terminal" class="h-full p-3 bg-void"></div>
+            </div>
         </div>
 
     </div>
@@ -370,9 +381,17 @@
 
             socket.onopen = () => {
                 socket.send(JSON.stringify({ type: 'resize', cols: term.cols, rows: term.rows }));
+                const loader = document.getElementById('terminal-loading');
+                if (loader) {
+                    loader.classList.add('hidden');
+                }
             };
 
             socket.onmessage = (event) => {
+                const loader = document.getElementById('terminal-loading');
+                if (loader && !loader.classList.contains('hidden')) {
+                    loader.classList.add('hidden');
+                }
                 if (event.data instanceof ArrayBuffer) {
                     term.write(new Uint8Array(event.data));
                 } else {

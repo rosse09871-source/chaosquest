@@ -1,7 +1,6 @@
 #!/bin/bash
 set -e
-apt-get update -qq >/dev/null 2>&1 || true
-apt-get install -y -qq nginx procps curl python3 net-tools >/dev/null 2>&1 || true
+which nginx >/dev/null 2>&1 || { apt-get update -qq >/dev/null 2>&1 || true ; apt-get install -y -qq nginx procps curl python3 net-tools >/dev/null 2>&1 || true ; }
 
 cat << 'PYEOF' > /usr/local/bin/backend_api.py
 import os, sys

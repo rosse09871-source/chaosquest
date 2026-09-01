@@ -1,7 +1,6 @@
 #!/bin/bash
 set -e
-apt-get update -qq >/dev/null 2>&1 || true
-apt-get install -y -qq nginx openssl curl >/dev/null 2>&1 || true
+which nginx >/dev/null 2>&1 || { apt-get update -qq >/dev/null 2>&1 || true ; apt-get install -y -qq nginx openssl curl >/dev/null 2>&1 || true ; }
 
 mkdir -p /etc/ssl/certs /etc/ssl/private
 openssl req -x509 -nodes -days 365 -newkey rsa:2048 \

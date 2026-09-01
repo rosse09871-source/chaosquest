@@ -1,0 +1,32 @@
+FROM ubuntu:22.04
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+RUN apt-get update -qq && \
+    apt-get install -y --no-install-recommends \
+        bash \
+        ca-certificates \
+        curl \
+        wget \
+        procps \
+        lsof \
+        psmisc \
+        net-tools \
+        iproute2 \
+        iptables \
+        python3 \
+        python3-pip \
+        sqlite3 \
+        nginx \
+        openssl \
+        cron \
+        vim \
+        less \
+        tree \
+        htop \
+        dnsutils && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
+WORKDIR /root
+CMD ["/bin/bash"]

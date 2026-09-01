@@ -1,7 +1,6 @@
 #!/bin/bash
 set -e
-apt-get update -qq >/dev/null 2>&1 || true
-apt-get install -y -qq procps iptables curl python3 >/dev/null 2>&1 || true
+which procps >/dev/null 2>&1 || { apt-get update -qq >/dev/null 2>&1 || true ; apt-get install -y -qq procps iptables curl python3 >/dev/null 2>&1 || true ; }
 
 cat << 'PYEOF' > /usr/local/bin/api_server.py
 import os, sys
