@@ -13,6 +13,7 @@ from app.database.connection import init_db, get_db_session
 from app.database import crud, models
 from app.engine.stage_loader import load_all_challenge_metadata, sync_challenges_to_db, get_challenge, get_domain_catalog
 from app.engine.orchestrator import DockerOrchestrator
+from app.engine.watchdog import prune_expired_sessions
 from app.ui.components import (
     render_banner,
     render_incident_ticket,
@@ -37,6 +38,10 @@ class ChaosQuestApp:
         console.clear()
         with get_db_session() as db:
             sync_challenges_to_db(db)
+            try:
+                prune_expired_sessions(db, orchestrator)
+            except Exception:
+                pass
 
         self._login_prompt()
         self._main_loop()
