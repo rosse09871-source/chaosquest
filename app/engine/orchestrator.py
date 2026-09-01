@@ -3,6 +3,7 @@ import subprocess
 import time
 from typing import Tuple, Optional, Dict, Any
 from pathlib import Path
+import shutil
 import docker
 from docker.errors import DockerException, NotFound, APIError
 from app.config import DEFAULT_CONTAINER_MEM_LIMIT, DEFAULT_CONTAINER_CPU_LIMIT
@@ -13,11 +14,34 @@ class SandboxError(Exception):
     pass
 
 
+def find_docker_executable() -> Optional[str]:
+    """Finds the docker executable path across standard system and macOS Docker Desktop locations."""
+    found = shutil.which("docker")
+    if found:
+        return found
+
+    candidate_paths = [
+        os.path.expanduser("~/.docker/bin/docker"),
+        "/usr/local/bin/docker",
+        "/opt/homebrew/bin/docker",
+        "/Applications/Docker.app/Contents/Resources/bin/docker",
+    ]
+    for p in candidate_paths:
+        if os.path.exists(p) and os.access(p, os.X_OK):
+            parent_dir = str(Path(p).parent)
+            if parent_dir not in os.environ.get("PATH", ""):
+                os.environ["PATH"] = f"{parent_dir}:{os.environ.get('PATH', '')}"
+            return p
+
+    return None
+
+
 class DockerOrchestrator:
     def __init__(self, base_image: str = "ubuntu:22.04"):
         self.base_image = base_image
         self._client: Optional[docker.DockerClient] = None
         self._docker_available = False
+        self.docker_bin = find_docker_executable()
         self._init_client()
 
     def _init_client(self):
@@ -148,13 +172,14 @@ class DockerOrchestrator:
             return False
 
     def get_shell_exec_command(self, stage_id: str, session_id: str) -> list:
-        if not self._docker_available or not self._client:
+        docker_bin = find_docker_executable()
+        if not self._docker_available or not self._client or not docker_bin:
             sandbox_dir = Path("data/sandboxes") / f"chaos_{stage_id}_{session_id}"
             sandbox_dir.mkdir(parents=True, exist_ok=True)
             return [
                 "bash",
                 "-c",
-                f"echo -e '\\033[1;33m[⚠️ 로컬 시뮬레이션 모드]\\033[0m Docker가 실행 중이지 않아 로컬 시뮬레이션 쉘로 진입합니다.\\n👉 샌드박스 경로: {sandbox_dir}\\n👉 조사를 마치고 메인 화면으로 돌아가려면 exit 를 입력하세요.\\n'; cd {sandbox_dir} && PS1='(chaos-{stage_id}) \\w \\$ ' bash --norc",
+                f"echo -e '\\033[1;33m[⚠️ 로컬 시뮬레이션 모드]\\033[0m Docker CLI를 찾을 수 없어 로컬 시뮬레이션 쉘로 진입합니다.\\n👉 샌드박스 경로: {sandbox_dir}\\n👉 조사를 마치고 메인 화면으로 돌아가려면 exit 를 입력하세요.\\n'; cd {sandbox_dir} && PS1='(chaos-{stage_id}) \\w \\$ ' bash --norc",
             ]
         container_name = self._get_container_name(stage_id, session_id)
-        return ["docker", "exec", "-it", container_name, "bash"]
+        return [docker_bin, "exec", "-it", container_name, "bash"]
